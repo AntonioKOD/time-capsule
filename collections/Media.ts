@@ -18,21 +18,6 @@ export const Media: CollectionConfig = {
       // Vercel Blob configuration (production)
       disableLocalStorage: true,
       staticURL: '/api/media',
-      handler: async (req: any) => {
-        const handler = await createVercelBlobHandler('media')
-        if (handler && req.file) {
-          return handler({
-            data: req.file.data,
-            file: {
-              name: req.file.name,
-              size: req.file.size,
-              type: req.file.mimetype,
-            },
-            req,
-          })
-        }
-        return null
-      },
     } : {
       // Local storage configuration (development)
       staticDir: process.env.MEDIA_DIR || './media',
@@ -214,51 +199,84 @@ export const Media: CollectionConfig = {
     
     afterCreate: [
       async ({ doc, req }) => {
-        // Log successful upload and add image dimensions if available
         console.log(`✅ Media uploaded successfully: ${doc.filename} (${doc.filesize} bytes)`)
         
-        // For images, try to get dimensions using sharp
-        if (doc.mimeType?.startsWith('image/') && req.file?.data) {
+        // Handle Vercel Blob upload in production
+        if (process.env.NODE_ENV === 'production' && process.env.BLOB_READ_WRITE_TOKEN && req.file?.data) {
           try {
-            const sharp = await import('sharp')
-            const metadata = await sharp.default(req.file.data).metadata()
+            console.log(`📤 Uploading to Vercel Blob: ${doc.filename}`)
             
-            if (metadata.width && metadata.height) {
+            const handler = await createVercelBlobHandler('media')
+            if (handler) {
+              const uploadResult = await handler({
+                data: req.file.data,
+                file: {
+                  name: req.file.name,
+                  size: req.file.size,
+                  type: req.file.mimetype,
+                },
+                req,
+              })
+
+              // Update the document with Vercel Blob URL and metadata
+              let updateData: Record<string, unknown> = {
+                url: uploadResult.url,
+                filename: uploadResult.filename,
+                isProcessed: true,
+              }
+
+              // Add image dimensions if this is an image
+              if (doc.mimeType?.startsWith('image/')) {
+                try {
+                  const sharp = await import('sharp')
+                  const metadata = await sharp.default(req.file.data).metadata()
+                  if (metadata.width && metadata.height) {
+                    updateData.width = metadata.width
+                    updateData.height = metadata.height
+                  }
+                } catch {
+                  console.warn('Sharp not available for image dimensions')
+                }
+              }
+
               await req.payload.update({
                 collection: 'media',
                 id: doc.id,
-                data: {
-                  width: metadata.width,
-                  height: metadata.height,
-                  isProcessed: true,
-                },
+                data: updateData,
               })
-            } else {
-              await req.payload.update({
-                collection: 'media',
-                id: doc.id,
-                data: {
-                  isProcessed: true,
-                },
-              })
+
+              console.log(`✅ Vercel Blob upload successful: ${uploadResult.url}`)
             }
-          } catch {
-            console.warn('Sharp not available for image dimensions')
+          } catch (error) {
+            console.error('❌ Vercel Blob upload failed:', error)
+            // Mark as processed anyway to prevent loops
             await req.payload.update({
               collection: 'media',
               id: doc.id,
-              data: {
-                isProcessed: true,
-              },
+              data: { isProcessed: true },
             })
           }
         } else {
+          // Local storage or no blob token - just add image dimensions and mark processed
+          let updateData: Record<string, unknown> = { isProcessed: true }
+
+          if (doc.mimeType?.startsWith('image/') && req.file?.data) {
+            try {
+              const sharp = await import('sharp')
+              const metadata = await sharp.default(req.file.data).metadata()
+              if (metadata.width && metadata.height) {
+                updateData.width = metadata.width
+                updateData.height = metadata.height
+              }
+            } catch {
+              console.warn('Sharp not available for image dimensions')
+            }
+          }
+
           await req.payload.update({
             collection: 'media',
             id: doc.id,
-            data: {
-              isProcessed: true,
-            },
+            data: updateData,
           })
         }
       },
