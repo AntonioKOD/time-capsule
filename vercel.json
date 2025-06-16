@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/email-scheduler/notifications",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/email-scheduler",
+      "schedule": "*/5 * * * *"
+    }
+  ],
+  "functions": {
+    "app/api/email-scheduler/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/email-scheduler/notifications/route.ts": {
+      "maxDuration": 60
+    }
+  }
+} 
