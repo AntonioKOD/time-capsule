@@ -17,7 +17,7 @@ Disallow: /my-route/
 Allow: /api/gallery/stats
 
 # Sitemap
-Sitemap: https://timecapsulecreator.com/sitemap.xml
+Sitemap: https://timecapsul.co/sitemap.xml
 
 # Crawl delay
 Crawl-delay: 1 

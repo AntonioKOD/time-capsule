@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     title: 'Time Capsule Creator - Seal Memories for the Future',
     description: 'Create digital time capsules with photos, voice messages, and text. Set them to open at the perfect moment in the future.',
     images: ['/time_capsule.png'],
-    creator: '@timecapsulecreator',
+    creator: '@timecapsul',
   },
   robots: {
     index: true,

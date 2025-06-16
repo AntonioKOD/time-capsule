@@ -34,7 +34,7 @@ NEXT_PUBLIC_APP_URL=https://your-domain.com
 MEDIA_DIR=/tmp/media
 
 # Optional but recommended
-FROM_EMAIL=noreply@your-domain.com
+FROM_EMAIL=info@timecapsul.co
 FROM_NAME=Memory Capsule
 ```
 

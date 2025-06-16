@@ -35,7 +35,7 @@ DATABASE_URI=mongodb://localhost:27017/memory-capsule
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-SES_FROM_EMAIL=noreply@memorycapsule.app
+SES_FROM_EMAIL=info@timecapsul.co
 
 # Optional: For production deployment
 # PAYLOAD_PUBLIC_SERVER_URL=https://your-domain.com

@@ -1068,7 +1068,7 @@ export default function CreateCapsulePage() {
                         <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray" />
                         <Input
                           type="email"
-                          placeholder="friend@example.com"
+                                                      placeholder="friend@timecapsul.co"
                           value={email}
                           onChange={(e) => handleRecipientChange(index, e.target.value)}
                           className="brutalist-input pl-10"
@@ -1182,7 +1182,7 @@ export default function CreateCapsulePage() {
                   <Input
                     id="userEmail"
                     type="email"
-                    placeholder="your@email.com"
+                                                    placeholder="your@timecapsul.co"
                     value={formData.userEmail || ''}
                     onChange={(e) => handleInputChange('userEmail', e.target.value)}
                     className="brutalist-input pl-10"

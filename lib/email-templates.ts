@@ -38,7 +38,7 @@ export async function sendCapsuleDeliveryEmail(data: CapsuleEmailData): Promise<
     console.log(`🔍 Attempting to send email to: ${data.recipientEmail}`)
     console.log(`🔍 Capsule URL: ${capsuleUrl}`)
     console.log(`🔍 Resend API Key exists: ${!!process.env.RESEND_API_KEY}`)
-    console.log(`🔍 From email: ${process.env.RESEND_FROM_EMAIL}`)
+    console.log(`🔍 From email: ${process.env.FROM_EMAIL}`)
     
     await payload.sendEmail({
       to: data.recipientEmail,

@@ -163,7 +163,24 @@ export default buildConfig({
     },
   },
 
-  // Email configuration disabled (will use console logging)
+  // Email configuration using Resend
+  email: (() => {
+    if (process.env.RESEND_API_KEY && process.env.FROM_EMAIL) {
+      try {
+        const { resendAdapter } = require('@payloadcms/email-resend')
+        return resendAdapter({
+          apiKey: process.env.RESEND_API_KEY,
+          defaultFromAddress: process.env.FROM_EMAIL,
+          defaultFromName: 'Time Capsule',
+        })
+      } catch (error) {
+        console.warn('⚠️ Resend email adapter not available, using console logging')
+        return undefined
+      }
+    }
+    console.log('ℹ️ Email will be logged to console (no RESEND_API_KEY or FROM_EMAIL)')
+    return undefined
+  })(),
 
   // Sharp configuration for image processing
   sharp: (() => {
