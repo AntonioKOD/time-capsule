@@ -53,10 +53,7 @@ export default buildConfig({
     },
     // Force admin routes in production
     disable: false,
-    // Add base URL for production
-    ...(isProduction && process.env.NEXT_PUBLIC_APP_URL && {
-      baseURL: process.env.NEXT_PUBLIC_APP_URL,
-    }),
+    // Remove baseURL to prevent redirect issues - Payload handles this automatically
   },
 
   // Server URL configuration
@@ -166,18 +163,19 @@ export default buildConfig({
     },
   },
 
-  // Email configuration disabled for now (configure separately if needed)
+  // Email configuration disabled (will use console logging)
 
-  // Sharp configuration - only in development
-  ...(isProduction ? {} : (() => {
+  // Sharp configuration for image processing
+  sharp: (() => {
     try {
       const sharp = require('sharp')
-      return { sharp }
+      console.log('✅ Sharp loaded successfully for image processing')
+      return sharp
     } catch (e) {
-      console.warn('Sharp not available, image optimization disabled')
-      return {}
+      console.warn('⚠️ Sharp not available, image optimization disabled')
+      return undefined
     }
-  })()),
+  })(),
 
   // Environment-specific configuration
   secret: process.env.PAYLOAD_SECRET || (() => {

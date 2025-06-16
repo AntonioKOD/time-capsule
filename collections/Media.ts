@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck
 import { CollectionConfig } from 'payload'
-import { vercelBlobAdapter } from '../lib/storage/vercel-blob-adapter'
+import { createVercelBlobHandler, deleteFromVercelBlob } from '../lib/storage/vercel-blob-payload-adapter'
 
 /**
  * Media Collection
@@ -18,6 +18,21 @@ export const Media: CollectionConfig = {
       // Vercel Blob configuration (production)
       disableLocalStorage: true,
       staticURL: '/api/media',
+      handler: async (req: any) => {
+        const handler = await createVercelBlobHandler('media')
+        if (handler && req.file) {
+          return handler({
+            data: req.file.data,
+            file: {
+              name: req.file.name,
+              size: req.file.size,
+              type: req.file.mimetype,
+            },
+            req,
+          })
+        }
+        return null
+      },
     } : {
       // Local storage configuration (development)
       staticDir: process.env.MEDIA_DIR || './media',
@@ -199,37 +214,36 @@ export const Media: CollectionConfig = {
     
     afterCreate: [
       async ({ doc, req }) => {
-        // Handle Vercel Blob upload in production
-        if (process.env.NODE_ENV === 'production' && process.env.BLOB_READ_WRITE_TOKEN && req.file) {
+        // Log successful upload and add image dimensions if available
+        console.log(`✅ Media uploaded successfully: ${doc.filename} (${doc.filesize} bytes)`)
+        
+        // For images, try to get dimensions using sharp
+        if (doc.mimeType?.startsWith('image/') && req.file?.data) {
           try {
-            console.log(`📤 Processing file for Vercel Blob: ${req.file.name}`)
+            const sharp = await import('sharp')
+            const metadata = await sharp.default(req.file.data).metadata()
             
-            const uploadResult = await vercelBlobAdapter.uploadFile({
-              buffer: req.file.data,
-              mimetype: req.file.mimetype,
-              name: req.file.name,
-              size: req.file.size,
-            }, 'media')
-
-            // Update document with Vercel Blob URL and metadata
-            await req.payload.update({
-              collection: 'media',
-              id: doc.id,
-              data: {
-                url: uploadResult.url,
-                filename: uploadResult.filename,
-                filesize: uploadResult.filesize,
-                width: uploadResult.width,
-                height: uploadResult.height,
-                mimeType: uploadResult.mimeType,
-                isProcessed: true,
-              },
-            })
-
-            console.log(`✅ Vercel Blob upload successful: ${uploadResult.url}`)
-          } catch (error) {
-            console.error('❌ Vercel Blob upload failed:', error)
-            // Mark as processed anyway to prevent infinite loops
+            if (metadata.width && metadata.height) {
+              await req.payload.update({
+                collection: 'media',
+                id: doc.id,
+                data: {
+                  width: metadata.width,
+                  height: metadata.height,
+                  isProcessed: true,
+                },
+              })
+            } else {
+              await req.payload.update({
+                collection: 'media',
+                id: doc.id,
+                data: {
+                  isProcessed: true,
+                },
+              })
+            }
+          } catch {
+            console.warn('Sharp not available for image dimensions')
             await req.payload.update({
               collection: 'media',
               id: doc.id,
@@ -239,9 +253,6 @@ export const Media: CollectionConfig = {
             })
           }
         } else {
-          // Local storage - just mark as processed
-          console.log(`✅ Media uploaded successfully: ${doc.filename} (${doc.filesize} bytes)`)
-          
           await req.payload.update({
             collection: 'media',
             id: doc.id,
@@ -255,15 +266,9 @@ export const Media: CollectionConfig = {
     
     afterDelete: [
       async ({ doc }) => {
-        // Delete from Vercel Blob in production
-        if (process.env.NODE_ENV === 'production' && process.env.BLOB_READ_WRITE_TOKEN && doc.url) {
-          try {
-            console.log(`🗑️ Deleting from Vercel Blob: ${doc.url}`)
-            await vercelBlobAdapter.deleteFile(doc.url)
-            console.log(`✅ Vercel Blob deletion successful`)
-          } catch (error) {
-            console.error('❌ Vercel Blob deletion failed:', error)
-          }
+        // Delete from Vercel Blob if URL exists and we're in production
+        if (process.env.NODE_ENV === 'production' && process.env.BLOB_READ_WRITE_TOKEN && doc.url && doc.url.startsWith('http')) {
+          await deleteFromVercelBlob(doc.url)
         }
       },
     ],

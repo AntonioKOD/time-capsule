@@ -60,13 +60,11 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Rewrites for admin panel
+  // Rewrites - removed admin rewrite to prevent infinite redirect loops
   async rewrites() {
     return [
-      {
-        source: '/admin',
-        destination: '/admin/login',
-      },
+      // Payload CMS handles its own admin routing internally
+      // No custom rewrites needed for admin panel
     ];
   },
   
