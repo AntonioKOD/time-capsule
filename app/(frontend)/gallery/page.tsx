@@ -41,8 +41,6 @@ interface GalleryStats {
     neutral: number;
     negative: number;
   };
-  totalViews: number;
-  totalLikes: number;
 }
 
 export default function GalleryPage() {
@@ -63,8 +61,6 @@ export default function GalleryPage() {
       neutral: 0,
       negative: 0,
     },
-    totalViews: 0,
-    totalLikes: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
   const [selectedCapsule, setSelectedCapsule] = useState<PublicCapsule | null>(null);
@@ -117,8 +113,6 @@ export default function GalleryPage() {
             neutral: 0,
             negative: 0,
           },
-          totalViews: data.stats.totalViews || 0,
-          totalLikes: data.stats.totalLikes || 0,
         });
       }
     } catch (error) {
@@ -205,7 +199,7 @@ export default function GalleryPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto mb-12">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 max-w-2xl mx-auto mb-12">
             <div className="brutalist-card brutalist-card-blue p-6 text-center">
               <div className="text-3xl font-black text-white mb-2">
                 {statsLoading ? '...' : stats.totalCapsules.toLocaleString()}
@@ -217,18 +211,6 @@ export default function GalleryPage() {
                 {statsLoading ? '...' : stats.todaysCapsules}
               </div>
               <div className="text-white font-bold">Added Today</div>
-            </div>
-            <div className="brutalist-card brutalist-card-orange p-6 text-center">
-              <div className="text-3xl font-black text-white mb-2">
-                {statsLoading ? '...' : stats.totalViews.toLocaleString()}
-              </div>
-              <div className="text-white font-bold">Total Views</div>
-            </div>
-            <div className="brutalist-card brutalist-card-gray p-6 text-center">
-              <div className="text-3xl font-black text-white mb-2">
-                {statsLoading ? '...' : stats.totalLikes.toLocaleString()}
-              </div>
-              <div className="text-white font-bold">Total Likes</div>
             </div>
           </div>
 
