@@ -1,14 +1,33 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { resendAdapter } from '@payloadcms/email-resend'
 import { buildConfig } from 'payload'
 import path from 'path'
-import sharp from 'sharp'
 
 // Import collections
 import { Capsules } from './collections/Capsules'
 import { PublicCapsules } from './collections/PublicCapsules'
 import { Media } from './collections/Media'
+
+// Production environment check
+const isProduction = process.env.NODE_ENV === 'production'
+
+// Validate required environment variables
+if (isProduction) {
+  const requiredVars = ['DATABASE_URI', 'PAYLOAD_SECRET', 'NEXT_PUBLIC_APP_URL']
+  const missing = requiredVars.filter(varName => !process.env[varName])
+  
+  if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:', missing.join(', '))
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
+  }
+}
+
+console.log('🔧 Payload Config Loading:', {
+  environment: process.env.NODE_ENV,
+  hasDatabase: !!process.env.DATABASE_URI,
+  hasSecret: !!process.env.PAYLOAD_SECRET,
+  appUrl: process.env.NEXT_PUBLIC_APP_URL
+})
 
 /**
  * Payload CMS Configuration for Memory Capsule Creator
@@ -32,7 +51,16 @@ export default buildConfig({
     meta: {
       titleSuffix: '- Memory Capsule Admin',
     },
+    // Force admin routes in production
+    disable: false,
+    // Add base URL for production
+    ...(isProduction && process.env.NEXT_PUBLIC_APP_URL && {
+      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+    }),
   },
+
+  // Server URL configuration
+  serverURL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
 
   // Collections configuration
   collections: [
@@ -47,10 +75,12 @@ export default buildConfig({
         verify: false, // No email verification needed for admin
         maxLoginAttempts: 5,
         lockTime: 600 * 1000, // 10 minutes
+        useAPIKey: false, // Disable API key auth for simplicity
       },
       admin: {
         useAsTitle: 'email',
         description: 'Admin users for managing the Memory Capsule platform',
+        defaultColumns: ['email', 'firstName', 'lastName', 'createdAt'],
       },
       fields: [
         {
@@ -80,15 +110,19 @@ export default buildConfig({
     ],
   }),
 
-  // Database configuration
+  // Database configuration with production optimizations
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || 'mongodb://localhost:27017/memory-capsule',
     connectOptions: {
       dbName: 'memory-capsule',
-      ...(process.env.NODE_ENV === 'production' && {
+      // Production-specific options
+      ...(isProduction && {
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
+        family: 4, // Use IPv4, skip trying IPv6
+        retryWrites: true,
+        w: 'majority',
       }),
     },
   }),
@@ -101,20 +135,28 @@ export default buildConfig({
   // GraphQL configuration
   graphQL: {
     schemaOutputFile: path.resolve(__dirname, 'generated-schema.graphql'),
+    disable: false, // Enable GraphQL for admin panel
   },
 
-  // CORS configuration for Next.js integration
+  // CORS configuration for production
   cors: [
     'http://localhost:3000',
     'https://localhost:3000',
-    process.env.NEXT_PUBLIC_APP_URL || '',
+    ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
+    // Add common deployment platforms
+    ...(isProduction ? [
+      '*.vercel.app',
+      '*.netlify.app',
+      '*.herokuapp.com',
+      '*.railway.app',
+    ] : []),
   ].filter(Boolean),
 
   // CSRF protection
   csrf: [
     'http://localhost:3000',
     'https://localhost:3000',
-    process.env.NEXT_PUBLIC_APP_URL || '',
+    ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
   ].filter(Boolean),
 
   // File upload configuration
@@ -124,14 +166,27 @@ export default buildConfig({
     },
   },
 
-  // Sharp for image processing - conditional for production
-  ...(process.env.NODE_ENV === 'production' ? {} : { sharp }),
+  // Email configuration disabled for now (configure separately if needed)
+
+  // Sharp configuration - only in development
+  ...(isProduction ? {} : (() => {
+    try {
+      const sharp = require('sharp')
+      return { sharp }
+    } catch (e) {
+      console.warn('Sharp not available, image optimization disabled')
+      return {}
+    }
+  })()),
 
   // Environment-specific configuration
   secret: process.env.PAYLOAD_SECRET || (() => {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('PAYLOAD_SECRET environment variable is required in production');
+    if (isProduction) {
+      throw new Error('PAYLOAD_SECRET environment variable is required in production')
     }
-    return 'jkhdas0919391iosjkdasi00u30akjd';
+    return 'development-secret-not-for-production'
   })(),
+
+  // Disable telemetry in production
+  telemetry: !isProduction,
 })
