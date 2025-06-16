@@ -1,5 +1,6 @@
 'use client'
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Zap } from "lucide-react";
 
@@ -18,10 +19,12 @@ export default function Home() {
             className="flex items-center space-x-3 text-2xl font-black text-black hover:text-blue transition-colors duration-200 font-retro uppercase"
           >
             <div className="flex h-12 w-12 items-center justify-center bg-white border-3 border-black shadow-brutalist overflow-hidden">
-              <img 
+              <Image 
                 src="/time_capsule.png" 
                 alt="Time Capsule Creator Logo" 
-                className="h-10 w-10 object-contain"
+                width={40}
+                height={40}
+                className="object-contain"
               />
             </div>
             <span>Time Capsule</span>
@@ -250,10 +253,12 @@ export default function Home() {
             <div className="md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="flex h-12 w-12 items-center justify-center bg-white border-3 border-black shadow-brutalist overflow-hidden">
-                  <img 
+                  <Image 
                     src="/time_capsule.png" 
                     alt="Time Capsule Creator Logo" 
-                    className="h-10 w-10 object-contain"
+                    width={40}
+                    height={40}
+                    className="object-contain"
                   />
                 </div>
                 <span className="text-2xl font-black text-black font-retro uppercase">Time Capsule</span>

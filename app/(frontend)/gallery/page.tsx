@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -52,11 +54,6 @@ export default function GalleryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  useEffect(() => {
-    fetchCapsules();
-    fetchStats();
-  }, [filters]);
-
   const fetchCapsules = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -102,6 +99,11 @@ export default function GalleryPage() {
       console.error('Error fetching stats:', error);
     }
   }, []);
+
+  useEffect(() => {
+    fetchCapsules();
+    fetchStats();
+  }, [filters, fetchCapsules, fetchStats]);
 
   const getSentimentEmoji = useCallback((sentiment: string) => {
     switch (sentiment) {
@@ -158,7 +160,7 @@ export default function GalleryPage() {
             </h1>
             <p className="text-xl text-black font-bold leading-relaxed max-w-2xl mx-auto">
               Discover anonymous memories from people around the world. 
-              Each capsule is a window into someone's thoughts and feelings.
+              Each capsule is a window into someone&apos;s thoughts and feelings.
             </p>
           </div>
 
@@ -353,7 +355,7 @@ export default function GalleryPage() {
                     {/* Content */}
                     <div className="mb-4">
                       <div className="text-black font-bold leading-relaxed line-clamp-4 text-base whitespace-pre-line">
-                        "{capsule.textContent.replace(/&#x27;/g, "'").replace(/&#39;/g, "'").replace(/&apos;/g, "'")}"
+                        &quot;{capsule.textContent.replace(/&#x27;/g, "'").replace(/&#39;/g, "'").replace(/&apos;/g, "'")}&quot;
                       </div>
                     </div>
 
@@ -406,7 +408,7 @@ export default function GalleryPage() {
           </h2>
           <p className="text-xl font-bold mb-8 max-w-2xl mx-auto leading-relaxed" style={{ color: '#ffffff' }}>
             Create your own time capsule and choose to share it with the world. 
-            Your story might inspire someone else's journey.
+            Your story might inspire someone else&apos;s journey.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -450,7 +452,7 @@ export default function GalleryPage() {
             <div className="brutalist-window-content p-8">
               <div className="mb-6">
                 <div className="text-black font-bold leading-relaxed text-lg whitespace-pre-line">
-                  "{selectedCapsule.textContent.replace(/&#x27;/g, "'").replace(/&#39;/g, "'").replace(/&apos;/g, "'")}"
+                  &quot;{selectedCapsule.textContent.replace(/&#x27;/g, "'").replace(/&#39;/g, "'").replace(/&apos;/g, "'")}&quot;
                 </div>
               </div>
 

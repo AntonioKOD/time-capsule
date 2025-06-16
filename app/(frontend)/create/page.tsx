@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -497,12 +499,12 @@ export default function CreateCapsulePage() {
                 <div className="text-left">
                   <h3 className="font-black text-black mb-2 flex items-center gap-2 font-retro uppercase">
                     <Clock className="h-5 w-5 text-blue" />
-                    What's Next?
+                    What&apos;s Next?
                   </h3>
                   <div className="space-y-2 text-sm text-black font-bold">
                     <p>📧 Confirmation email sent</p>
                     <p>📅 Delivery scheduled</p>
-                    <p>🔔 You'll be notified when it's ready</p>
+                    <p>🔔 You&apos;ll be notified when it&apos;s ready</p>
                     <p>💝 Your memory is safely stored</p>
                   </div>
                 </div>
@@ -517,14 +519,16 @@ export default function CreateCapsulePage() {
                   Share Your Memory
                 </h3>
                 <div className="mb-4">
-                  <img 
+                  <Image 
                     src={shareableImageUrl} 
                     alt="Shareable memory capsule image" 
+                    width={400}
+                    height={300}
                     className="mx-auto border-4 border-black shadow-brutalist max-w-sm"
                   />
                 </div>
                 <p className="text-sm text-white font-bold mb-4">
-                  Share this beautiful image to let others know you've sealed a memory!
+                  Share this beautiful image to let others know you&apos;ve sealed a memory!
                 </p>
                 <div className="button-group">
                   <button 
@@ -648,9 +652,11 @@ export default function CreateCapsulePage() {
                     <h3 className="font-black text-black mb-3 font-retro uppercase">Attached Media</h3>
                     <div className="bg-gray p-4 border-3 border-black shadow-brutalist">
                       {mediaPreview && formData.contentType === 'photo' && (
-                        <img 
+                        <Image 
                           src={mediaPreview} 
                           alt="Preview" 
+                          width={400}
+                          height={256}
                           className="max-w-full h-auto border-4 border-black shadow-brutalist max-h-64 object-cover"
                         />
                       )}
@@ -957,10 +963,12 @@ export default function CreateCapsulePage() {
                       
                       {mediaPreview && formData.contentType === 'photo' && (
                         <div className="mt-4">
-                          <img 
+                          <Image 
                             src={mediaPreview} 
                             alt="Preview" 
-                            className="max-w-full h-auto border-4 border-black shadow-brutalist max-h-48 object-cover"
+                            width={400}
+                            height={256}
+                            className="max-w-full h-auto border-4 border-black shadow-brutalist max-h-64 object-cover"
                           />
                         </div>
                       )}
@@ -970,7 +978,7 @@ export default function CreateCapsulePage() {
                           <video 
                             src={mediaPreview} 
                             controls
-                            className="max-w-full h-auto border-4 border-black shadow-brutalist max-h-48"
+                            className="max-w-full h-auto border-4 border-black shadow-brutalist max-h-64"
                           >
                             Your browser does not support the video tag.
                           </video>
@@ -1276,7 +1284,7 @@ export default function CreateCapsulePage() {
                           in our public gallery where people discover meaningful memories from around the world.
                         </p>
                         <p className="text-xs text-gray font-bold mb-4">
-                          💡 Don't worry - you can also choose to share your memory after opening your time capsule!
+                          💡 Don&apos;t worry - you can also choose to share your memory after opening your time capsule!
                         </p>
                         <div className="flex flex-wrap gap-2">
                           <div className="brutalist-badge text-xs px-3 py-1">Anonymous</div>

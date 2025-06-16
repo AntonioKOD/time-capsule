@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
   
   // Performance optimizations
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Disabled due to critters module error
     optimizePackageImports: ['lucide-react'],
   },
   

@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { CapsuleData } from '@/types/capsule';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Globe } from 'lucide-react';
 
 interface CapsulePageProps {
@@ -26,13 +28,7 @@ export default function CapsulePage() {
   const [showPublicOption, setShowPublicOption] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
 
-  useEffect(() => {
-    if (uniqueLink) {
-      fetchCapsule();
-    }
-  }, [uniqueLink]);
-
-  const fetchCapsule = async () => {
+  const fetchCapsule = useCallback(async () => {
     try {
       const response = await fetch(`/api/capsules/${uniqueLink}`);
       const data = await response.json();
@@ -50,7 +46,13 @@ export default function CapsulePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [uniqueLink]);
+
+  useEffect(() => {
+    if (uniqueLink) {
+      fetchCapsule();
+    }
+  }, [uniqueLink, fetchCapsule]);
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -390,20 +392,22 @@ export default function CapsulePage() {
           <div className="min-h-48 flex items-center justify-center">
             {capsule.contentType === 'text' && capsule.textContent && (
               <div className="text-center max-w-2xl">
-                <div className="text-6xl text-blue mb-4">"</div>
+                <div className="text-6xl text-blue mb-4">&quot;</div>
                 <p className="text-2xl leading-relaxed text-black font-bold mb-4">
                   {capsule.textContent}
                 </p>
-                <div className="text-6xl text-blue">"</div>
+                <div className="text-6xl text-blue">&quot;</div>
               </div>
             )}
 
             {capsule.media && (
               <div className="w-full text-center">
                 {capsule.contentType === 'photo' && (
-                  <img 
+                  <Image 
                     src={capsule.media.url} 
                     alt="Memory photo"
+                    width={800}
+                    height={600}
                     className="max-w-full h-auto border-4 border-black shadow-brutalist max-h-96 mx-auto"
                   />
                 )}

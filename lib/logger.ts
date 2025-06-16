@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Production-ready logging utility
  * Replaces console.log statements with structured logging

@@ -65,7 +65,7 @@ const DefaultErrorFallback: React.FC<{ error?: Error; resetError: () => void }> 
             Something went wrong
           </h1>
           <p className="text-black font-bold">
-            We encountered an unexpected error. Don't worry, your data is safe.
+            We encountered an unexpected error. Don&apos;t worry, your data is safe.
           </p>
         </div>
 

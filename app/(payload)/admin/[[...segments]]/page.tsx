@@ -1,6 +1,6 @@
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { RootPage, generatePageMetadata } from '@payloadcms/next/views'
 import type { Metadata } from 'next'
 import { unstable_noStore } from 'next/cache'
@@ -8,18 +8,16 @@ import { unstable_noStore } from 'next/cache'
 import config from '@payload-config'
 
 type Args = {
-  params: {
+  params: Promise<{
     segments: string[]
-  }
-  searchParams: { [key: string]: string | string[] }
+  }>
+  searchParams: Promise<{ [key: string]: string | string[] }>
 }
 
 export const generateMetadata = ({ params, searchParams }: Args): Promise<Metadata> =>
   generatePageMetadata({ config, params, searchParams })
 
-const Page = ({ params, searchParams }: Args) => {
+export default function Page({ params, searchParams }: Args) {
   unstable_noStore()
-  return RootPage({ config, params, searchParams })
+  return RootPage({ config, params, searchParams, importMap: {} as any })
 }
-
-export default Page

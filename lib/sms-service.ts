@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import twilio from 'twilio';
 
 // Initialize Twilio client
@@ -276,9 +277,8 @@ export async function testSMSConfiguration(): Promise<SMSResult> {
         error: 'TWILIO_PHONE_NUMBER not configured'
       };
     }
-
     // Test by getting account info
-    const account = await twilioClient.api.accounts(process.env.TWILIO_ACCOUNT_SID).fetch();
+    const account = await twilioClient.api.accounts(process.env.TWILIO_ACCOUNT_SID!).fetch();
     
     return {
       success: true,

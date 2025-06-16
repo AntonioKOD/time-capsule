@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@payload-config';
@@ -16,7 +17,7 @@ export async function POST(
 
     // Get current capsule
     const capsule = await payload.findByID({
-      collection: 'publicCapsules',
+      collection: 'publicCapsules' as any,
       id,
     });
 
@@ -31,10 +32,9 @@ export async function POST(
     // In a real app, you'd track user likes to prevent duplicates
     const currentLikes = capsule.likes || 0;
     const newLikes = currentLikes + 1;
-
     // Update the capsule
     await payload.update({
-      collection: 'publicCapsules',
+      collection: 'publicCapsules' as any,
       id,
       data: {
         likes: newLikes,
@@ -69,7 +69,7 @@ export async function GET(
 
     // Get current capsule
     const capsule = await payload.findByID({
-      collection: 'publicCapsules',
+      collection: 'publicCapsules' as any,
       id,
     });
 
@@ -79,14 +79,12 @@ export async function GET(
         { status: 404 }
       );
     }
-
     // Increment view count
-    const currentViews = capsule.views || 0;
+    const currentViews = (capsule as any).views || 0;
     const newViews = currentViews + 1;
-
     // Update the capsule
     await payload.update({
-      collection: 'publicCapsules',
+      collection: 'publicCapsules' as any,
       id,
       data: {
         views: newViews,

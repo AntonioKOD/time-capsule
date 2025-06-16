@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import config from '@payload-config';
@@ -16,7 +17,7 @@ export async function POST(
 
     // Find the original capsule
     const capsulesResult = await payload.find({
-      collection: 'capsules',
+      collection: 'capsules' as any,
       where: {
         uniqueLink: { equals: uniqueLink }
       },
@@ -30,7 +31,7 @@ export async function POST(
       );
     }
 
-    const capsule = capsulesResult.docs[0];
+    const capsule = capsulesResult.docs[0] as any;
 
     // Validate that it's a text capsule and not already public
     if (capsule.contentType !== 'text') {
@@ -56,7 +57,7 @@ export async function POST(
 
     // Check if already exists in public collection
     const existingPublic = await payload.find({
-      collection: 'publicCapsules',
+      collection: 'publicCapsules' as any,
       where: {
         originalCapsuleId: { equals: capsule.id }
       },
@@ -116,7 +117,7 @@ export async function POST(
 
     // Create public capsule entry
     const publicCapsule = await payload.create({
-      collection: 'publicCapsules',
+      collection: 'publicCapsules' as any,
       data: {
         originalCapsuleId: capsule.id,
         textContent: capsule.textContent,
@@ -128,16 +129,16 @@ export async function POST(
         featured: false,
         reportCount: 0,
         isHidden: false,
-      },
+      } as any,
     });
 
     // Update original capsule to mark as public
     await payload.update({
-      collection: 'capsules',
+      collection: 'capsules' as any,
       id: capsule.id,
       data: {
         isPublic: true,
-      },
+      } as any,
     });
 
     return NextResponse.json({

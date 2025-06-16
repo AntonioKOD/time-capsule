@@ -464,9 +464,7 @@ async function deliverCapsule(capsule: CapsuleForDelivery): Promise<void> {
  * This is called when a capsule is created
  */
 export async function scheduleCapsuleDelivery(
-  capsuleId: string,
-  deliveryDate: string
-): Promise<boolean> {
+capsuleId: string, deliveryDateTime: Date, recipients: string[], phoneRecipients: string[], deliveryDate: string): Promise<boolean> {
   try {
     const payload = await getPayloadClient()
     
@@ -653,5 +651,4 @@ export async function retryFailedDeliveries(): Promise<{
   }
 }
 
-// Export types for external use
-export type { CapsuleForDelivery } 
+// Types are exported at the top of the file

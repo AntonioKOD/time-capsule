@@ -1,109 +1,98 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
-import { getPayload } from 'payload';
-import config from '@payload-config';
+import { getPayloadClient } from '@/lib/payload';
 
 /**
- * GET /api/gallery
- * Fetch public capsules for the gallery with filtering and sorting
+ * GET /api/gallery - Get public capsules for the gallery
+ * Supports search, filtering, sorting, and pagination
  */
 export async function GET(request: NextRequest) {
   try {
-    const payload = await getPayload({ config });
     const { searchParams } = new URL(request.url);
     
-    // Extract query parameters
+    // Parse query parameters
     const search = searchParams.get('search') || '';
-    const sentiment = searchParams.get('sentiment') || 'all';
-    const sortBy = searchParams.get('sortBy') || 'recent';
-    const tag = searchParams.get('tag') || '';
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const sentiment = searchParams.get('sentiment') || '';
+    const sortBy = searchParams.get('sortBy') || 'newest';
     const page = parseInt(searchParams.get('page') || '1');
-
-    // Build query conditions
+    const limit = parseInt(searchParams.get('limit') || '12');
+    
+    console.log(`🔍 Gallery query: search="${search}", sentiment="${sentiment}", sortBy="${sortBy}", page=${page}`);
+    
+    const payload = await getPayloadClient();
+    
+    // Build where clause
     const where: any = {
-      isHidden: { not_equals: true }, // Exclude hidden capsules
+      isHidden: {
+        not_equals: true,
+      },
     };
-
-    // Search in text content
+    
+    // Add search filter
     if (search) {
       where.textContent = {
         contains: search,
       };
     }
-
-    // Filter by sentiment
-    if (sentiment !== 'all') {
-      where.sentiment = { equals: sentiment };
-    }
-
-    // Filter by tag
-    if (tag) {
-      where.tags = {
-        tag: { equals: tag }
+    
+    // Add sentiment filter
+    if (sentiment && sentiment !== 'all') {
+      where.sentiment = {
+        equals: sentiment,
       };
     }
-
-    // Build sort options
+    
+    // Build sort clause
     let sort: string;
     switch (sortBy) {
+      case 'oldest':
+        sort = 'createdAt';
+        break;
       case 'popular':
         sort = '-likes';
         break;
-      case 'trending':
-        // Trending = high likes + recent (within last 7 days)
-        where.createdAt = {
-          greater_than: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        };
-        sort = '-likes';
+      case 'views':
+        sort = '-views';
         break;
-      case 'featured':
-        where.featured = { equals: true };
-        sort = '-createdAt';
-        break;
-      case 'recent':
+      case 'newest':
       default:
         sort = '-createdAt';
         break;
     }
-
+    
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+    
+    console.log(`📊 Query params: where=${JSON.stringify(where)}, sort=${sort}, limit=${limit}, skip=${skip}`);
+    
     // Fetch public capsules
     const result = await payload.find({
-      collection: 'publicCapsules',
+      collection: 'publicCapsules' as any,
       where,
       sort,
       limit,
       page,
     });
-
-    // Format response data
-    const capsules = result.docs.map((capsule: any) => ({
-      id: capsule.id,
-      textContent: capsule.textContent,
-      tags: capsule.tags || [],
-      sentiment: capsule.sentiment || 'neutral',
-      wordCount: capsule.wordCount || 0,
-      likes: capsule.likes || 0,
-      views: capsule.views || 0,
-      createdAt: capsule.createdAt,
-      featured: capsule.featured || false,
-    }));
-
+    
+    console.log(`✅ Found ${result.docs.length} capsules (total: ${result.totalDocs})`);
+    
     return NextResponse.json({
       success: true,
-      capsules,
+      capsules: result.docs,
       pagination: {
         page: result.page,
+        limit: result.limit,
         totalPages: result.totalPages,
         totalDocs: result.totalDocs,
         hasNextPage: result.hasNextPage,
         hasPrevPage: result.hasPrevPage,
-      }
+      },
     });
-
+    
   } catch (error) {
     console.error('❌ Error fetching gallery capsules:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch capsules' },
+      { success: false, error: 'Failed to fetch gallery capsules' },
       { status: 500 }
     );
   }

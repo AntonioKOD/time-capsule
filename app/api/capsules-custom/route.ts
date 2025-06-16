@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
@@ -6,7 +7,7 @@ import { sanitizeTextContent, generateUniqueFilename } from "@/lib/validation";
 import { sendCapsuleCreationConfirmation, sendCapsuleRecipientNotification } from "@/lib/email-templates";
 // import { sendCapsuleCreationSMS, sendCapsuleRecipientSMS } from "@/lib/sms-service"; // SMS functionality commented out
 import { scheduleCapsuleDelivery } from "@/lib/email-scheduler";
-import { CapsuleApiResponse } from "@/types/capsule";
+import { CapsuleApiResponse, ContentType } from "@/types/capsule";
 
 /**
  * POST /api/capsules-custom - Create a new memory capsule
@@ -216,11 +217,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
           file: {
             data: Buffer.from(await mediaFile.arrayBuffer()),
             mimetype: mediaFile.type,
-            name: generateUniqueFilename(mediaFile.name),
+            name: generateUniqueFilename(mediaFile.name, contentType as ContentType),
             size: mediaFile.size,
           },
         });
-        
         mediaData = uploadedMedia;
         console.log(`📁 Media uploaded successfully: ${uploadedMedia.id}`);
       } catch (error) {
@@ -300,7 +300,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
       
       // Schedule delivery
       try {
-        await scheduleCapsuleDelivery(capsule.id, deliveryDateTime, recipients, phoneRecipients);
+        await scheduleCapsuleDelivery(capsule.id, deliveryDateTime, recipients, phoneRecipients, deliveryDate);
         console.log(`📅 Scheduled capsule ${capsule.id} for delivery on ${deliveryDate}`);
         console.log(`📅 Capsule scheduled for delivery on: ${deliveryDate}`);
       } catch (scheduleError) {
@@ -311,22 +311,25 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
       // Send confirmation emails
       try {
         if (userEmail) {
-          await sendCapsuleCreationConfirmation(userEmail, {
+          await sendCapsuleCreationConfirmation(
             uniqueLink,
-            deliveryDate: deliveryDateTime,
-            contentType,
-            recipientCount: recipients.length,
-          });
+            userEmail,
+            deliveryDateTime.toISOString(),
+            contentType
+          );
           console.log(`📧 Capsule creation confirmation sent to: ${userEmail}`);
         }
         
         // Send notifications to recipients
         for (const email of recipients) {
           try {
-            await sendCapsuleRecipientNotification(email, {
-              deliveryDate: deliveryDateTime,
-              senderEmail: userEmail || 'anonymous',
-            });
+            await sendCapsuleRecipientNotification(
+              email,
+              deliveryDateTime.toISOString(),
+              contentType,
+              uniqueLink,
+              !!password
+            );
             console.log(`📧 Recipient notification sent to: ${email}`);
           } catch (emailError) {
             console.error(`⚠️ Failed to send notification to ${email}:`, emailError);
