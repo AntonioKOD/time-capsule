@@ -35,6 +35,14 @@ interface GalleryFilters {
 interface GalleryStats {
   totalCapsules: number;
   todaysCapsules: number;
+  featured: number;
+  sentiment: {
+    positive: number;
+    neutral: number;
+    negative: number;
+  };
+  totalViews: number;
+  totalLikes: number;
 }
 
 export default function GalleryPage() {
@@ -48,8 +56,17 @@ export default function GalleryPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState<GalleryStats>({
     totalCapsules: 0,
-    todaysCapsules: 0
+    todaysCapsules: 0,
+    featured: 0,
+    sentiment: {
+      positive: 0,
+      neutral: 0,
+      negative: 0,
+    },
+    totalViews: 0,
+    totalLikes: 0,
   });
+  const [statsLoading, setStatsLoading] = useState(true);
   const [selectedCapsule, setSelectedCapsule] = useState<PublicCapsule | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -85,6 +102,7 @@ export default function GalleryPage() {
   }, [filters.search, filters.sentiment, filters.sortBy]);
 
   const fetchStats = useCallback(async () => {
+    setStatsLoading(true);
     try {
       const response = await fetch('/api/gallery/stats');
       const data = await response.json();
@@ -92,11 +110,21 @@ export default function GalleryPage() {
       if (data.success && data.stats) {
         setStats({
           totalCapsules: data.stats.totalCapsules || 0,
-          todaysCapsules: data.stats.todaysCapsules || 0
+          todaysCapsules: data.stats.todaysCapsules || 0,
+          featured: data.stats.featured || 0,
+          sentiment: data.stats.sentiment || {
+            positive: 0,
+            neutral: 0,
+            negative: 0,
+          },
+          totalViews: data.stats.totalViews || 0,
+          totalLikes: data.stats.totalLikes || 0,
         });
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+    } finally {
+      setStatsLoading(false);
     }
   }, []);
 
@@ -158,21 +186,88 @@ export default function GalleryPage() {
             <h1 className="text-5xl font-black text-black mb-6 font-retro uppercase leading-tight">
               Memory Gallery
             </h1>
-            <p className="text-xl text-black font-bold leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xl text-black font-bold leading-relaxed max-w-2xl mx-auto mb-6">
               Discover anonymous memories from people around the world. 
               Each capsule is a window into someone&apos;s thoughts and feelings.
             </p>
+            
+            {/* Stats Refresh Button */}
+            <button 
+              onClick={fetchStats}
+              disabled={statsLoading}
+              className="brutalist-button brutalist-button-black brutalist-button-sm mx-auto"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${statsLoading ? 'animate-spin' : ''}`} />
+              <span style={{ color: 'inherit' }}>
+                {statsLoading ? 'Updating...' : 'Refresh Stats'}
+              </span>
+            </button>
           </div>
 
           {/* Stats */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 max-w-2xl mx-auto mb-12">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto mb-12">
             <div className="brutalist-card brutalist-card-blue p-6 text-center">
-              <div className="text-3xl font-black text-white mb-2">{stats.totalCapsules}</div>
+              <div className="text-3xl font-black text-white mb-2">
+                {statsLoading ? '...' : stats.totalCapsules.toLocaleString()}
+              </div>
               <div className="text-white font-bold">Total Memories</div>
             </div>
             <div className="brutalist-card brutalist-card-black p-6 text-center">
-              <div className="text-3xl font-black text-white mb-2">{stats.todaysCapsules}</div>
+              <div className="text-3xl font-black text-white mb-2">
+                {statsLoading ? '...' : stats.todaysCapsules}
+              </div>
               <div className="text-white font-bold">Added Today</div>
+            </div>
+            <div className="brutalist-card brutalist-card-orange p-6 text-center">
+              <div className="text-3xl font-black text-white mb-2">
+                {statsLoading ? '...' : stats.totalViews.toLocaleString()}
+              </div>
+              <div className="text-white font-bold">Total Views</div>
+            </div>
+            <div className="brutalist-card brutalist-card-gray p-6 text-center">
+              <div className="text-3xl font-black text-white mb-2">
+                {statsLoading ? '...' : stats.totalLikes.toLocaleString()}
+              </div>
+              <div className="text-white font-bold">Total Likes</div>
+            </div>
+          </div>
+
+          {/* Sentiment Distribution */}
+          <div className="max-w-4xl mx-auto mb-12">
+            <h3 className="text-2xl font-black text-black mb-6 text-center font-retro uppercase">
+              Community Mood
+            </h3>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="brutalist-card brutalist-card-white p-6 text-center border-4 border-green-500">
+                <div className="text-4xl mb-2">😊</div>
+                <div className="text-2xl font-black text-black mb-1">
+                  {statsLoading ? '...' : stats.sentiment.positive}
+                </div>
+                <div className="text-black font-bold">Hopeful</div>
+                <div className="text-sm text-gray-600 mt-2">
+                  {statsLoading ? '...' : stats.totalCapsules > 0 ? Math.round((stats.sentiment.positive / stats.totalCapsules) * 100) : 0}%
+                </div>
+              </div>
+              <div className="brutalist-card brutalist-card-white p-6 text-center border-4 border-yellow-500">
+                <div className="text-4xl mb-2">😐</div>
+                <div className="text-2xl font-black text-black mb-1">
+                  {statsLoading ? '...' : stats.sentiment.neutral}
+                </div>
+                <div className="text-black font-bold">Thoughtful</div>
+                <div className="text-sm text-gray-600 mt-2">
+                  {statsLoading ? '...' : stats.totalCapsules > 0 ? Math.round((stats.sentiment.neutral / stats.totalCapsules) * 100) : 0}%
+                </div>
+              </div>
+              <div className="brutalist-card brutalist-card-white p-6 text-center border-4 border-blue-500">
+                <div className="text-4xl mb-2">😔</div>
+                <div className="text-2xl font-black text-black mb-1">
+                  {statsLoading ? '...' : stats.sentiment.negative}
+                </div>
+                <div className="text-black font-bold">Reflective</div>
+                <div className="text-sm text-gray-600 mt-2">
+                  {statsLoading ? '...' : stats.totalCapsules > 0 ? Math.round((stats.sentiment.negative / stats.totalCapsules) * 100) : 0}%
+                </div>
+              </div>
             </div>
           </div>
 

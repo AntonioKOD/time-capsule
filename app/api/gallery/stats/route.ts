@@ -85,6 +85,14 @@ export async function GET() {
     
     return NextResponse.json({
       success: true,
+      stats: {
+        totalCapsules: totalResult.totalDocs,
+        todaysCapsules: activeUsersResult.totalDocs,
+        featured: featuredResult.totalDocs,
+        sentiment: sentimentCounts,
+        totalViews,
+        totalLikes,
+      },
       data: {
         total: totalResult.totalDocs,
         featured: featuredResult.totalDocs,
