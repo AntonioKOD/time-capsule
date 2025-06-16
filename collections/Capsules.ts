@@ -3,6 +3,7 @@
 import { CollectionConfig } from 'payload'
 import { v4 as uuidv4 } from 'uuid'
 import bcrypt from 'bcryptjs'
+import { generateTagsFromText } from '../lib/helpers'
 
 /**
  * Capsules Collection
@@ -396,41 +397,4 @@ export const Capsules: CollectionConfig = {
   timestamps: true,
 }
 
-/**
- * Generate tags from text content using simple keyword extraction
- * @param text - Text content to analyze
- * @returns Array of relevant tags
- */
-function generateTagsFromText(text: string): string[] {
-  // Common emotional and thematic keywords
-  const keywordMap: Record<string, string[]> = {
-    love: ['love', 'heart', 'romance', 'relationship', 'partner', 'boyfriend', 'girlfriend', 'husband', 'wife'],
-    family: ['family', 'mom', 'dad', 'mother', 'father', 'parent', 'child', 'kids', 'baby', 'sibling'],
-    friendship: ['friend', 'friendship', 'buddy', 'pal', 'companion'],
-    gratitude: ['thank', 'grateful', 'appreciate', 'blessing', 'thankful'],
-    hope: ['hope', 'dream', 'wish', 'future', 'goal', 'aspiration'],
-    achievement: ['success', 'achievement', 'accomplish', 'goal', 'victory', 'win', 'graduate'],
-    memory: ['memory', 'remember', 'nostalgia', 'past', 'childhood', 'moment'],
-    growth: ['learn', 'grow', 'change', 'improve', 'better', 'progress'],
-    challenge: ['difficult', 'hard', 'struggle', 'challenge', 'overcome'],
-    celebration: ['celebrate', 'party', 'birthday', 'anniversary', 'holiday', 'wedding'],
-  }
-  
-  const lowerText = text.toLowerCase()
-  const foundTags: string[] = []
-  
-  // Check for keyword matches
-  Object.entries(keywordMap).forEach(([tag, keywords]) => {
-    if (keywords.some(keyword => lowerText.includes(keyword))) {
-      foundTags.push(tag)
-    }
-  })
-  
-  // Add some general tags based on content length and style
-  if (text.length > 1000) foundTags.push('detailed')
-  if (text.includes('?')) foundTags.push('reflective')
-  if (text.includes('!')) foundTags.push('emotional')
-  
-  // Return unique tags, max 5
-  return [...new Set(foundTags)].slice(0, 5)
-} 
+ 

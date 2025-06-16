@@ -8,6 +8,7 @@ import { sendCapsuleCreationConfirmation, sendCapsuleRecipientNotification } fro
 // import { sendCapsuleCreationSMS, sendCapsuleRecipientSMS } from "@/lib/sms-service"; // SMS functionality commented out
 import { scheduleCapsuleDelivery } from "@/lib/email-scheduler";
 import { CapsuleApiResponse, ContentType } from "@/types/capsule";
+import { generateTagsFromText, detectSentiment } from "@/lib/helpers";
 
 /**
  * POST /api/capsules-custom - Create a new memory capsule
@@ -273,7 +274,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
       if (isPublic && sanitizedTextContent) {
         try {
           const tags = generateTagsFromText(sanitizedTextContent);
-          const sentiment = analyzeSentiment(sanitizedTextContent);
+          const sentiment = detectSentiment(sanitizedTextContent);
           
           await payload.create({
             collection: "publicCapsules",
@@ -403,69 +404,4 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
   }
 }
 
-/**
- * Simple tag generation from text content
- * In production, you might use a more sophisticated NLP service
- * @param text - Text to analyze
- * @returns string[] - Array of tags
- */
-function generateTagsFromText(text: string): string[] {
-  const commonWords = new Set([
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
-    'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
-    'will', 'would', 'could', 'should', 'may', 'might', 'can', 'must', 'i', 'you', 'he', 'she',
-    'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its',
-    'our', 'their', 'this', 'that', 'these', 'those'
-  ]);
-  
-  const words = text
-    .toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(/\s+/)
-    .filter(word => word.length > 3 && !commonWords.has(word));
-  
-  // Count word frequency
-  const wordCount = words.reduce((acc, word) => {
-    acc[word] = (acc[word] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  
-  // Return top 5 most frequent words as tags
-  return Object.entries(wordCount)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
-    .map(([word]) => word);
-}
-
-/**
- * Simple sentiment analysis
- * In production, you might use Hugging Face API or similar service
- * @param text - Text to analyze
- * @returns string - Sentiment classification
- */
-function analyzeSentiment(text: string): 'positive' | 'neutral' | 'negative' {
-  const positiveWords = [
-    'happy', 'joy', 'love', 'excited', 'amazing', 'wonderful', 'great', 'fantastic',
-    'awesome', 'brilliant', 'excellent', 'perfect', 'beautiful', 'grateful', 'thankful',
-    'blessed', 'hope', 'dream', 'success', 'achievement', 'celebration', 'victory'
-  ];
-  
-  const negativeWords = [
-    'sad', 'angry', 'hate', 'terrible', 'awful', 'horrible', 'bad', 'worst',
-    'disappointed', 'frustrated', 'worried', 'anxious', 'depressed', 'lonely',
-    'scared', 'afraid', 'angry', 'upset', 'hurt', 'pain', 'loss', 'failure'
-  ];
-  
-  const words = text.toLowerCase().split(/\s+/);
-  let positiveScore = 0;
-  let negativeScore = 0;
-  
-  words.forEach(word => {
-    if (positiveWords.includes(word)) positiveScore++;
-    if (negativeWords.includes(word)) negativeScore++;
-  });
-  
-  if (positiveScore > negativeScore) return 'positive';
-  if (negativeScore > positiveScore) return 'negative';
-  return 'neutral';
-} 
+ 
