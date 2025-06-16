@@ -4,12 +4,12 @@ import bcrypt from "bcryptjs";
 import { getPayloadClient } from "@/lib/payload";
 import { sanitizeTextContent, generateUniqueFilename } from "@/lib/validation";
 import { sendCapsuleCreationConfirmation, sendCapsuleRecipientNotification } from "@/lib/email-templates";
-import { sendCapsuleCreationSMS, sendCapsuleRecipientSMS } from "@/lib/sms-service";
+// import { sendCapsuleCreationSMS, sendCapsuleRecipientSMS } from "@/lib/sms-service"; // SMS functionality commented out
 import { scheduleCapsuleDelivery } from "@/lib/email-scheduler";
 import { CapsuleApiResponse } from "@/types/capsule";
 
 /**
- * POST /api/capsules - Create a new memory capsule
+ * POST /api/capsules-custom - Create a new memory capsule
  * Handles form data with optional file upload, validation, and email scheduling
  */
 export async function POST(request: NextRequest): Promise<NextResponse<CapsuleApiResponse>> {
@@ -26,12 +26,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
     const textContent = formData.get("textContent") as string;
     const deliveryDate = formData.get("deliveryDate") as string;
     const recipientsString = formData.get("recipients") as string;
-    const phoneRecipientsString = formData.get("phoneRecipients") as string;
+    // const phoneRecipientsString = formData.get("phoneRecipients") as string; // SMS functionality commented out
     const password = formData.get("password") as string;
     const isPublic = formData.get("isPublic") === "true";
     const isPaid = formData.get("isPaid") === "true";
     const userEmail = formData.get("userEmail") as string;
-    const userPhone = formData.get("userPhone") as string;
+    // const userPhone = formData.get("userPhone") as string; // SMS functionality commented out
+    const userPhone: string | undefined = undefined; // SMS functionality disabled
     
     // Parse recipients array
     const recipients = recipientsString 
@@ -39,9 +40,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
       : [];
     
     // Parse phone recipients array
-    const phoneRecipients = phoneRecipientsString 
-      ? phoneRecipientsString.split(',').map(phone => phone.trim()).filter(Boolean)
-      : [];
+    // SMS functionality commented out
+    const phoneRecipients: string[] = []; // Empty array since SMS is disabled
     
     // Handle media file
     const mediaFile = formData.get("media") as File | null;
@@ -119,6 +119,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
     }
 
     // Validate phone recipients
+    // SMS functionality commented out
+    /*
     if (phoneRecipients.length > 3) {
       return NextResponse.json({
         success: false,
@@ -147,6 +149,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
         }, { status: 400 });
       }
     }
+    */
 
     // Validate paid capsule requirements
     if (isPaid && !userEmail) {
@@ -198,25 +201,38 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
       if (expectedTypes && !expectedTypes.includes(mediaFile.type)) {
         return NextResponse.json({
           success: false,
-          error: `Invalid file type for ${contentType}`,
+          error: `Invalid file type for ${contentType}. Expected: ${expectedTypes.join(', ')}`,
         }, { status: 400 });
       }
       
-      // Generate unique filename
-      const uniqueFilename = generateUniqueFilename(mediaFile.name);
-      
-      // For now, we'll store basic file info
-      // In production, you'd upload to cloud storage
-      mediaData = {
-        filename: uniqueFilename,
-        originalName: mediaFile.name,
-        mimeType: mediaFile.type,
-        size: mediaFile.size,
-        // url: uploadedFileUrl, // Would be set after cloud upload
-      };
+      try {
+        // Upload media file to Payload CMS
+        const payload = await getPayloadClient();
+        const uploadedMedia = await payload.create({
+          collection: 'media',
+          data: {
+            alt: `${contentType} for memory capsule`,
+          },
+          file: {
+            data: Buffer.from(await mediaFile.arrayBuffer()),
+            mimetype: mediaFile.type,
+            name: generateUniqueFilename(mediaFile.name),
+            size: mediaFile.size,
+          },
+        });
+        
+        mediaData = uploadedMedia;
+        console.log(`📁 Media uploaded successfully: ${uploadedMedia.id}`);
+      } catch (error) {
+        console.error("❌ Error uploading media:", error);
+        return NextResponse.json({
+          success: false,
+          error: "Failed to upload media file",
+        }, { status: 500 });
+      }
     }
     
-    // Generate unique identifiers
+    // Generate unique link for the capsule
     const uniqueLink = uuidv4();
     
     // Hash password if provided
@@ -228,37 +244,34 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
     // Sanitize text content
     const sanitizedTextContent = textContent ? sanitizeTextContent(textContent) : undefined;
     
-    // Create capsule in Payload CMS
     try {
+      // Create capsule in Payload CMS
       const payload = await getPayloadClient();
       const capsule = await payload.create({
         collection: "capsules",
         data: {
           contentType,
           textContent: sanitizedTextContent,
-          media: mediaData,
-          deliveryDate: new Date(deliveryDate),
+          media: mediaData?.id,
+          deliveryDate: deliveryDateTime.toISOString(),
           recipients: recipients.map(email => ({ email })),
-          phoneRecipients: phoneRecipients.map(phone => ({ phone })),
+          // phoneRecipients: phoneRecipients.map(phone => ({ phone })), // SMS functionality commented out
           uniqueLink,
           password: hashedPassword,
           isPublic,
           isPaid,
-          userEmail: userEmail || undefined,
-          userPhone: userPhone || undefined,
-          status: "scheduled", // Track capsule status
-          testMode, // Pass test mode to Payload for validation
-          createdAt: new Date(),
+          userEmail,
+          // userPhone, // SMS functionality commented out
+          status: 'scheduled',
+          testMode,
         },
       });
       
       console.log(`✅ Capsule created successfully: ${capsule.id}`);
       
-      // Create public capsule entry if marked as public
+      // Create public capsule entry if it's public
       if (isPublic && sanitizedTextContent) {
         try {
-          // Generate tags using simple keyword extraction
-          // In production, you might use Hugging Face API for sentiment analysis
           const tags = generateTagsFromText(sanitizedTextContent);
           const sentiment = analyzeSentiment(sanitizedTextContent);
           
@@ -267,95 +280,94 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
             data: {
               originalCapsuleId: capsule.id,
               textContent: sanitizedTextContent,
-              tags,
+              tags: tags.map(tag => ({ tag })),
               sentiment,
-              createdAt: new Date(),
+              wordCount: sanitizedTextContent.split(/\s+/).length,
+              featured: false,
+              likes: 0,
+              views: 0,
+              reportCount: 0,
+              isHidden: false,
             },
           });
           
-          console.log(`✅ Public capsule entry created for capsule: ${capsule.id}`);
-        } catch (error) {
-          console.error("⚠️ Failed to create public capsule entry:", error);
-          // Don't fail the main request if public entry fails
+          console.log(`🌍 Public capsule entry created for: ${capsule.id}`);
+        } catch (publicError) {
+          console.error("⚠️ Failed to create public capsule entry:", publicError);
+          // Don't fail the main request if public capsule creation fails
         }
       }
       
-      // Schedule capsule for delivery
+      // Schedule delivery
       try {
-        await scheduleCapsuleDelivery(capsule.id, deliveryDate);
+        await scheduleCapsuleDelivery(capsule.id, deliveryDateTime, recipients, phoneRecipients);
+        console.log(`📅 Scheduled capsule ${capsule.id} for delivery on ${deliveryDate}`);
         console.log(`📅 Capsule scheduled for delivery on: ${deliveryDate}`);
-      } catch (error) {
-        console.error("⚠️ Failed to schedule capsule delivery:", error);
+      } catch (scheduleError) {
+        console.error("⚠️ Failed to schedule capsule delivery:", scheduleError);
         // Don't fail the main request if scheduling fails
       }
       
-      // Send confirmation email to creator if email provided
-      if (userEmail) {
-        try {
-          await sendCapsuleCreationConfirmation(
+      // Send confirmation emails
+      try {
+        if (userEmail) {
+          await sendCapsuleCreationConfirmation(userEmail, {
             uniqueLink,
-            userEmail,
-            deliveryDate,
-            contentType
-          );
-        } catch (error) {
-          console.error("⚠️ Failed to send confirmation email:", error);
-          // Don't fail the main request if confirmation email fails
-        }
-      }
-
-      // Send confirmation SMS to creator if phone provided
-      if (userPhone) {
-        try {
-          await sendCapsuleCreationSMS(
-            userPhone,
-            deliveryDate,
+            deliveryDate: deliveryDateTime,
             contentType,
-            uniqueLink
-          );
-          console.log(`📱 Creation SMS sent to: ${userPhone}`);
-        } catch (error) {
-          console.error("⚠️ Failed to send confirmation SMS:", error);
-          // Don't fail the main request if confirmation SMS fails
+            recipientCount: recipients.length,
+          });
+          console.log(`📧 Capsule creation confirmation sent to: ${userEmail}`);
         }
-      }
-
-      // Send notification emails to recipients
-      if (recipients.length > 0) {
-        for (const recipient of recipients) {
+        
+        // Send notifications to recipients
+        for (const email of recipients) {
           try {
-            await sendCapsuleRecipientNotification(
-              recipient,
-              deliveryDate,
-              contentType,
-              uniqueLink,
-              !!hashedPassword
-            );
-            console.log(`📧 Recipient notification sent to: ${recipient}`);
-          } catch (error) {
-            console.error(`⚠️ Failed to send recipient notification to ${recipient}:`, error);
-            // Don't fail the main request if recipient notification fails
+            await sendCapsuleRecipientNotification(email, {
+              deliveryDate: deliveryDateTime,
+              senderEmail: userEmail || 'anonymous',
+            });
+            console.log(`📧 Recipient notification sent to: ${email}`);
+          } catch (emailError) {
+            console.error(`⚠️ Failed to send notification to ${email}:`, emailError);
+            // Continue with other recipients
           }
         }
+      } catch (emailError) {
+        console.error("⚠️ Failed to send confirmation emails:", emailError);
+        // Don't fail the main request if email fails
       }
-
-      // Send notification SMS to phone recipients
-      if (phoneRecipients.length > 0) {
-        for (const phoneRecipient of phoneRecipients) {
+      
+      // Send SMS notifications
+      // SMS functionality commented out
+      /*
+      try {
+        if (userPhone) {
+          await sendCapsuleCreationSMS(userPhone, {
+            uniqueLink,
+            deliveryDate: deliveryDateTime,
+          });
+          console.log(`📱 Capsule creation SMS sent to: ${userPhone}`);
+        }
+        
+        // Send SMS notifications to phone recipients
+        for (const phone of phoneRecipients) {
           try {
-            await sendCapsuleRecipientSMS(
-              phoneRecipient,
-              deliveryDate,
-              contentType,
-              !!hashedPassword
-            );
-            console.log(`📱 Recipient SMS sent to: ${phoneRecipient}`);
-          } catch (error) {
-            console.error(`⚠️ Failed to send recipient SMS to ${phoneRecipient}:`, error);
-            // Don't fail the main request if recipient SMS fails
+            await sendCapsuleRecipientSMS(phone, {
+              deliveryDate: deliveryDateTime,
+              senderPhone: userPhone || 'anonymous',
+            });
+            console.log(`📱 Recipient SMS sent to: ${phone}`);
+          } catch (smsError) {
+            console.error(`⚠️ Failed to send SMS to ${phone}:`, smsError);
+            // Continue with other recipients
           }
         }
+      } catch (smsError) {
+        console.error("⚠️ Failed to send SMS notifications:", smsError);
+        // Don't fail the main request if SMS fails
       }
+      */
       
       // Generate shareable image URL (placeholder for now)
       // In production, you would generate an actual image using html2canvas or similar
@@ -384,101 +396,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<CapsuleAp
     return NextResponse.json({
       success: false,
       error: "Internal server error. Please try again.",
-    }, { status: 500 });
-  }
-}
-
-/**
- * GET /api/capsules - Get capsule by unique link (for viewing)
- * This endpoint would be used when someone opens a capsule
- */
-export async function GET(request: NextRequest): Promise<NextResponse> {
-  try {
-    const { searchParams } = new URL(request.url);
-    const uniqueLink = searchParams.get("link");
-    const password = searchParams.get("password");
-    
-    if (!uniqueLink) {
-      return NextResponse.json({
-        success: false,
-        error: "Unique link is required",
-      }, { status: 400 });
-    }
-    
-    // Find capsule by unique link
-    const payload = await getPayloadClient();
-    const capsules = await payload.find({
-      collection: "capsules",
-      where: {
-        uniqueLink: {
-          equals: uniqueLink,
-        },
-      },
-      limit: 1,
-    });
-    
-    if (capsules.docs.length === 0) {
-      return NextResponse.json({
-        success: false,
-        error: "Capsule not found",
-      }, { status: 404 });
-    }
-    
-    const capsule = capsules.docs[0];
-    
-    // Check if capsule is ready for delivery
-    const now = new Date();
-    const deliveryDate = new Date(capsule.deliveryDate);
-    
-    if (now < deliveryDate) {
-      return NextResponse.json({
-        success: false,
-        error: "This capsule is not ready to be opened yet",
-        deliveryDate: capsule.deliveryDate,
-      }, { status: 403 });
-    }
-    
-    // Check password if capsule is protected
-    if (capsule.password) {
-      if (!password) {
-        return NextResponse.json({
-          success: false,
-          error: "Password required",
-          requiresPassword: true,
-        }, { status: 401 });
-      }
-      
-      const isPasswordValid = await bcrypt.compare(password, capsule.password);
-      if (!isPasswordValid) {
-        return NextResponse.json({
-          success: false,
-          error: "Invalid password",
-          requiresPassword: true,
-        }, { status: 401 });
-      }
-    }
-    
-    // Return capsule data (excluding sensitive information)
-    const capsuleData = {
-      id: capsule.id,
-      contentType: capsule.contentType,
-      textContent: capsule.textContent,
-      media: capsule.media,
-      deliveryDate: capsule.deliveryDate,
-      createdAt: capsule.createdAt,
-      isPublic: capsule.isPublic,
-    };
-    
-    return NextResponse.json({
-      success: true,
-      data: capsuleData,
-    });
-    
-  } catch (error) {
-    console.error("❌ Error retrieving capsule:", error);
-    return NextResponse.json({
-      success: false,
-      error: "Failed to retrieve capsule",
     }, { status: 500 });
   }
 }

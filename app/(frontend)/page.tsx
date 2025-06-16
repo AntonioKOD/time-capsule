@@ -1,7 +1,7 @@
 'use client'
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, Play, Heart, Zap } from "lucide-react";
+import { ArrowRight, Heart, Zap } from "lucide-react";
 
 /**
  * Time Capsule Creator Landing Page
@@ -17,8 +17,12 @@ export default function Home() {
             href="/" 
             className="flex items-center space-x-3 text-2xl font-black text-black hover:text-blue transition-colors duration-200 font-retro uppercase"
           >
-            <div className="flex h-12 w-12 items-center justify-center bg-blue border-3 border-black shadow-brutalist">
-              <Sparkles className="h-6 w-6 text-white" />
+            <div className="flex h-12 w-12 items-center justify-center bg-white border-3 border-black shadow-brutalist overflow-hidden">
+              <img 
+                src="/time_capsule.png" 
+                alt="Time Capsule Creator Logo" 
+                className="h-10 w-10 object-contain"
+              />
             </div>
             <span>Time Capsule</span>
           </Link>
@@ -91,28 +95,9 @@ export default function Home() {
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               </button>
-              
-              <button className="brutalist-button brutalist-button-secondary text-lg px-8 py-4">
-                <Link href="/about" className="flex items-center gap-3 no-underline text-inherit">
-                  <Play className="h-5 w-5" />
-                  Watch Demo
-                </Link>
-              </button>
             </div>
             
-            {/* Brutalist Stats */}
-            <div className="flex flex-wrap justify-center gap-8">
-              {[
-                { number: "10K+", label: "Memories Stored", color: "brutalist-card-blue" },
-                { number: "99.9%", label: "Uptime", color: "brutalist-card-black" },
-                { number: "5★", label: "User Rating", color: "brutalist-card-white" }
-              ].map((stat, index) => (
-                <div key={index} className={`brutalist-card ${stat.color} p-6 text-center min-w-[120px]`}>
-                  <div className="text-3xl font-black mb-2 font-retro">{stat.number}</div>
-                  <div className="text-sm font-bold uppercase">{stat.label}</div>
-                </div>
-              ))}
-            </div>
+
           </div>
         </div>
       </section>
@@ -264,8 +249,12 @@ export default function Home() {
           <div className="grid gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="flex h-12 w-12 items-center justify-center bg-blue border-3 border-black shadow-brutalist">
-                  <Sparkles className="h-6 w-6 text-white" />
+                <div className="flex h-12 w-12 items-center justify-center bg-white border-3 border-black shadow-brutalist overflow-hidden">
+                  <img 
+                    src="/time_capsule.png" 
+                    alt="Time Capsule Creator Logo" 
+                    className="h-10 w-10 object-contain"
+                  />
                 </div>
                 <span className="text-2xl font-black text-black font-retro uppercase">Time Capsule</span>
               </div>

@@ -19,7 +19,10 @@ export const Capsules: CollectionConfig = {
       return true
     },
     update: () => false, // Capsules are immutable once created
-    delete: () => false, // Capsules should not be deleted
+    delete: ({ req }) => {
+      // Only allow admin users to delete capsules
+      return !!req.user
+    },
   },
 
   // Admin panel configuration
@@ -27,6 +30,38 @@ export const Capsules: CollectionConfig = {
     useAsTitle: 'uniqueLink',
     defaultColumns: ['contentType', 'deliveryDate', 'isPublic', 'isPaid', 'createdAt'],
     description: 'Digital time capsules created by users',
+  },
+
+  // Hooks
+  hooks: {
+    afterDelete: [
+      async ({ req, doc }) => {
+        // Delete related public capsule entry if it exists
+        if (doc.isPublic) {
+          try {
+            const publicCapsules = await req.payload.find({
+              collection: 'publicCapsules',
+              where: {
+                originalCapsuleId: {
+                  equals: doc.id,
+                },
+              },
+              limit: 1,
+            });
+
+            if (publicCapsules.docs.length > 0) {
+              await req.payload.delete({
+                collection: 'publicCapsules',
+                id: publicCapsules.docs[0].id,
+              });
+              console.log(`🗑️ Also deleted public capsule entry for: ${doc.uniqueLink}`);
+            }
+          } catch (error) {
+            console.error('⚠️ Error deleting related public capsule:', error);
+          }
+        }
+      },
+    ],
   },
 
   // Collection fields
@@ -147,6 +182,8 @@ export const Capsules: CollectionConfig = {
         },
       ],
     },
+    // SMS functionality commented out
+    /*
     {
       name: 'phoneRecipients',
       type: 'array',
@@ -173,6 +210,7 @@ export const Capsules: CollectionConfig = {
         },
       ],
     },
+    */
     {
       name: 'uniqueLink',
       type: 'text',
@@ -234,6 +272,8 @@ export const Capsules: CollectionConfig = {
         description: 'Creator email for notifications and payment confirmation',
       },
     },
+    // SMS functionality commented out
+    /*
     {
       name: 'userPhone',
       type: 'text',
@@ -253,6 +293,7 @@ export const Capsules: CollectionConfig = {
         return true;
       },
     },
+    */
     {
       name: 'status',
       type: 'select',

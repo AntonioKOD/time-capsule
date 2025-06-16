@@ -15,6 +15,8 @@ export function isValidEmail(email: string): boolean {
  * @param phoneNumber - Phone number to validate
  * @returns boolean - Whether phone number is valid
  */
+// SMS functionality commented out
+/*
 export function isValidPhoneNumber(phoneNumber: string): boolean {
   // Remove all non-digit characters
   const digitsOnly = phoneNumber.replace(/\D/g, '');
@@ -37,12 +39,15 @@ export function isValidPhoneNumber(phoneNumber: string): boolean {
   // For other international numbers, accept 7-15 digits
   return digitsOnly.length >= 7 && digitsOnly.length <= 15;
 }
+*/
 
 /**
  * Format phone number for display
  * @param phoneNumber - Phone number to format
  * @returns string - Formatted phone number
  */
+// SMS functionality commented out
+/*
 export function formatPhoneNumberDisplay(phoneNumber: string): string {
   const digitsOnly = phoneNumber.replace(/\D/g, '');
   
@@ -62,6 +67,7 @@ export function formatPhoneNumberDisplay(phoneNumber: string): string {
   
   return `+${digitsOnly}`;
 }
+*/
 
 /**
  * Validate file size and type for media uploads
@@ -236,6 +242,8 @@ export function validateCapsuleForm(formData: CapsuleFormData): FormErrors {
   }
 
   // Validate phone recipients
+  // SMS functionality commented out
+  /*
   if (formData.phoneRecipients && formData.phoneRecipients.length > 3) {
     errors.phoneRecipients = "Maximum 3 phone numbers allowed";
   }
@@ -249,6 +257,7 @@ export function validateCapsuleForm(formData: CapsuleFormData): FormErrors {
       errors.phoneRecipients = `Invalid phone number format: ${invalidPhones.join(', ')}`;
     }
   }
+  */
   
   // Validate password if provided
   if (formData.password && formData.password.length < 6) {
@@ -261,9 +270,12 @@ export function validateCapsuleForm(formData: CapsuleFormData): FormErrors {
   }
 
   // Validate user phone if provided
+  // SMS functionality commented out
+  /*
   if (formData.userPhone && !isValidPhoneNumber(formData.userPhone)) {
     errors.userPhone = "Please enter a valid phone number";
   }
+  */
 
   // Validate paid capsule requirements
   if (formData.isPaid) {

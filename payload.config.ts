@@ -28,14 +28,10 @@ import { Media } from './collections/Media'
 export default buildConfig({
   // Admin panel configuration
   admin: {
-    user: 'users', // We'll create a simple users collection for admin access
-    bundler: undefined, // Use default bundler
+    user: 'users',
     meta: {
       titleSuffix: '- Memory Capsule Admin',
-      favicon: '/favicon.ico',
-      ogImage: '/og-image.jpg',
     },
-    css: path.resolve(__dirname, './admin.css'), // Custom admin styles (optional)
   },
 
   // Collections configuration
@@ -57,16 +53,6 @@ export default buildConfig({
         description: 'Admin users for managing the Memory Capsule platform',
       },
       fields: [
-        {
-          name: 'role',
-          type: 'select',
-          required: true,
-          defaultValue: 'admin',
-          options: [
-            { label: 'Admin', value: 'admin' },
-            { label: 'Moderator', value: 'moderator' },
-          ],
-        },
         {
           name: 'firstName',
           type: 'text',
@@ -91,13 +77,12 @@ export default buildConfig({
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,
-      // Add any additional rich text features here
     ],
   }),
 
   // Database configuration
   db: mongooseAdapter({
-    url: process.env.MONGODB_URI || 'mongodb://localhost:27017/memory-capsule',
+    url: process.env.DATABASE_URI || 'mongodb://localhost:27017/memory-capsule',
     connectOptions: {
       dbName: 'memory-capsule',
     },
@@ -117,7 +102,6 @@ export default buildConfig({
   cors: [
     'http://localhost:3000',
     'https://localhost:3000',
-    // Add your production domain here
     process.env.NEXT_PUBLIC_APP_URL || '',
   ].filter(Boolean),
 
@@ -125,7 +109,6 @@ export default buildConfig({
   csrf: [
     'http://localhost:3000',
     'https://localhost:3000',
-    // Add your production domain here
     process.env.NEXT_PUBLIC_APP_URL || '',
   ].filter(Boolean),
 
@@ -140,108 +123,45 @@ export default buildConfig({
   sharp,
 
   // Environment-specific configuration
-  secret: process.env.PAYLOAD_SECRET || 'your-secret-key-here',
-
-  // Localization (optional - can be expanded for multi-language support)
-  localization: false,
-
-  // Rate limiting (optional - for production security)
-  rateLimit: {
-    max: 1000, // Limit each IP to 1000 requests per windowMs
-    window: 15 * 60 * 1000, // 15 minutes
-    skip: (req) => {
-      // Skip rate limiting for admin panel
-      return req.url?.startsWith('/admin')
-    },
-  },
-
-  // Email configuration with Resend
-  email: resendAdapter({
-    defaultFromAddress: process.env.RESEND_FROM_EMAIL || 'info@wanderingbartender.com',
-    defaultFromName: 'Memory Capsule Creator',
-    apiKey: process.env.RESEND_API_KEY || '',
-  }),
-
-  // Plugins (can be extended with additional Payload plugins)
-  plugins: [
-    // Add plugins here as needed
-  ],
-
-  // Global configuration
-  globals: [
-    // Add global configurations here (e.g., site settings)
-    {
-      slug: 'settings',
-      fields: [
-        {
-          name: 'siteName',
-          type: 'text',
-          defaultValue: 'Memory Capsule Creator',
-        },
-        {
-          name: 'siteDescription',
-          type: 'textarea',
-          defaultValue: 'Create digital time capsules with your thoughts, photos, and voice messages.',
-        },
-        {
-          name: 'maintenanceMode',
-          type: 'checkbox',
-          defaultValue: false,
-          admin: {
-            description: 'Enable maintenance mode to temporarily disable capsule creation',
-          },
-        },
-        {
-          name: 'maxCapsulesPerDay',
-          type: 'number',
-          defaultValue: 10,
-          admin: {
-            description: 'Maximum number of capsules that can be created per IP per day',
-          },
-        },
-        {
-          name: 'stripePublishableKey',
-          type: 'text',
-          admin: {
-            description: 'Stripe publishable key for $1 capsule payments',
-          },
-        },
-      ],
-      access: {
-        read: () => true,
-        update: ({ req }) => {
-          // Only admins can update settings
-          return req.user?.role === 'admin'
-        },
-      },
-    },
-  ],
-
-  // Hooks (global)
-  hooks: {
-    beforeChange: [
-      async ({ req }) => {
-        // Log all changes for audit purposes
-        if (req.user) {
-          console.log(`🔄 Change initiated by user: ${req.user.email}`)
-        }
-      },
-    ],
-  },
-
-  // Custom endpoints (optional)
-  endpoints: [
-    // Add custom API endpoints here if needed
-    {
-      path: '/health',
-      method: 'get',
-      handler: async (req, res) => {
-        res.status(200).json({
-          status: 'healthy',
-          timestamp: new Date().toISOString(),
-          version: '1.0.0',
-        })
-      },
-    },
-  ],
+  secret: process.env.PAYLOAD_SECRET || 'jkhdas0919391iosjkdasi00u30akjd',
 })
+
+// Helper functions for tag generation and sentiment analysis
+export function generateTagsFromText(text: string): string[] {
+  // Simple tag extraction based on common keywords
+  const keywords = [
+    'love', 'family', 'friend', 'hope', 'dream', 'future', 'past', 'memory',
+    'happy', 'sad', 'excited', 'scared', 'grateful', 'proud', 'sorry',
+    'work', 'school', 'travel', 'home', 'birthday', 'wedding', 'graduation',
+    'baby', 'child', 'parent', 'grandparent', 'pet', 'health', 'success'
+  ]
+  
+  const textLower = text.toLowerCase()
+  const foundTags = keywords.filter(keyword => textLower.includes(keyword))
+  
+  // Limit to 5 tags maximum
+  return foundTags.slice(0, 5)
+}
+
+export function detectSentiment(text: string): 'positive' | 'neutral' | 'negative' {
+  const positiveWords = ['happy', 'love', 'excited', 'grateful', 'proud', 'amazing', 'wonderful', 'great', 'fantastic', 'perfect']
+  const negativeWords = ['sad', 'angry', 'disappointed', 'worried', 'scared', 'terrible', 'awful', 'horrible', 'hate', 'regret']
+  
+  const textLower = text.toLowerCase()
+  const positiveCount = positiveWords.filter(word => textLower.includes(word)).length
+  const negativeCount = negativeWords.filter(word => textLower.includes(word)).length
+  
+  if (positiveCount > negativeCount) return 'positive'
+  if (negativeCount > positiveCount) return 'negative'
+  return 'neutral'
+}
+
+export function sanitizeText(text: string): string {
+  // Basic XSS prevention
+  return text
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+}

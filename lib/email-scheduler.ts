@@ -1,6 +1,6 @@
 import { getPayloadClient } from './payload'
 import { sendCapsuleDeliveryEmail, sendCapsulePreOpeningEmail, CapsuleEmailData } from './email-templates'
-import { sendCapsuleDeliverySMS } from './sms-service'
+// import { sendCapsuleDeliverySMS } from './sms-service' // SMS functionality commented out
 
 /**
  * Email Scheduler for Memory Capsule Delivery
@@ -13,9 +13,9 @@ export interface CapsuleForDelivery {
   deliveryDate: string
   contentType: string
   recipients?: Array<{ email: string }>
-  phoneRecipients?: Array<{ phone: string }>
+  // phoneRecipients?: Array<{ phone: string }> // SMS functionality commented out
   userEmail?: string
-  userPhone?: string
+  // userPhone?: string // SMS functionality commented out
   password?: string
   status: string
 }
@@ -373,6 +373,8 @@ async function deliverCapsule(capsule: CapsuleForDelivery): Promise<void> {
   }
 
   // Determine all recipient phone numbers
+  // SMS functionality commented out
+  /*
   const recipientPhones: string[] = []
   
   // Add user phone (creator) if available
@@ -384,14 +386,15 @@ async function deliverCapsule(capsule: CapsuleForDelivery): Promise<void> {
   if (capsule.phoneRecipients && capsule.phoneRecipients.length > 0) {
     recipientPhones.push(...capsule.phoneRecipients.map(r => r.phone))
   }
+  */
   
-  if (recipientEmails.length === 0 && recipientPhones.length === 0) {
-    throw new Error('No recipient email or phone number available')
+  if (recipientEmails.length === 0) {
+    throw new Error('No recipient email available')
   }
   
   // Send email to each recipient
   let emailSuccessCount = 0
-  let smsSuccessCount = 0
+  // let smsSuccessCount = 0 // SMS functionality commented out
   const errors: string[] = []
   
   // Send emails
@@ -422,6 +425,8 @@ async function deliverCapsule(capsule: CapsuleForDelivery): Promise<void> {
   }
 
   // Send SMS to each phone recipient
+  // SMS functionality commented out
+  /*
   for (const recipientPhone of recipientPhones) {
     try {
       // Send the delivery SMS
@@ -441,15 +446,16 @@ async function deliverCapsule(capsule: CapsuleForDelivery): Promise<void> {
       errors.push(`Error sending SMS to ${recipientPhone}: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
+  */
   
-  const totalSuccessCount = emailSuccessCount + smsSuccessCount
+  const totalSuccessCount = emailSuccessCount // + smsSuccessCount // SMS functionality commented out
   
   if (totalSuccessCount === 0) {
     throw new Error(`Failed to deliver to any recipients: ${errors.join(', ')}`)
   }
   
   if (errors.length > 0) {
-    console.warn(`⚠️ Partial delivery success for capsule ${capsule.uniqueLink}. Emails: ${emailSuccessCount}/${recipientEmails.length}, SMS: ${smsSuccessCount}/${recipientPhones.length}. Errors: ${errors.join(', ')}`)
+    console.warn(`⚠️ Partial delivery success for capsule ${capsule.uniqueLink}. Emails: ${emailSuccessCount}/${recipientEmails.length}. Errors: ${errors.join(', ')}`)
   }
 }
 

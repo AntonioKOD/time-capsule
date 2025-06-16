@@ -7,12 +7,12 @@ export interface CapsuleFormData {
   media?: File;
   deliveryDate: string;
   recipients: string[];
-  phoneRecipients?: string[];
+  // phoneRecipients?: string[]; // SMS functionality commented out
   password?: string;
   isPublic: boolean;
   isPaid?: boolean;
   userEmail?: string;
-  userPhone?: string;
+  // userPhone?: string; // SMS functionality commented out
 }
 
 export interface CapsuleData {
@@ -27,14 +27,14 @@ export interface CapsuleData {
   };
   deliveryDate: string;
   recipients: string[];
-  phoneRecipients?: string[];
+  // phoneRecipients?: string[]; // SMS functionality commented out
   uniqueLink: string;
   password?: string;
   isPublic: boolean;
   isPaid: boolean;
   stripePaymentId?: string;
   userEmail?: string;
-  userPhone?: string;
+  // userPhone?: string; // SMS functionality commented out
   createdAt: string;
   updatedAt: string;
   isReady?: boolean;
@@ -81,10 +81,10 @@ export interface FormErrors {
   media?: string;
   deliveryDate?: string;
   recipients?: string;
-  phoneRecipients?: string;
+  // phoneRecipients?: string; // SMS functionality commented out
   password?: string;
   userEmail?: string;
-  userPhone?: string;
+  // userPhone?: string; // SMS functionality commented out
   isPublic?: string;
   isPaid?: string;
   general?: string;

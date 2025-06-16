@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Allow: /gallery
+Allow: /create
+Allow: /about
+Allow: /success
+Allow: /capsule/*
+
+# Disallow admin and API routes
+Disallow: /admin
+Disallow: /api/
+Disallow: /_next/
+Disallow: /payload-admin
+Disallow: /my-route/
+
+# Allow specific API routes for SEO
+Allow: /api/gallery/stats
+
+# Sitemap
+Sitemap: https://timecapsulecreator.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1 

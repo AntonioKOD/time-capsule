@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,8 +37,8 @@ import {
   Play,
   Download,
   Share,
-  Phone,
-  MessageSquare,
+  // Phone, // SMS functionality commented out
+  // MessageSquare, // SMS functionality commented out
 } from 'lucide-react';
 import { ContentType, CapsuleFormData, FormErrors, CapsulePreview } from '@/types/capsule';
 import { validateCapsuleForm, countWords } from '@/lib/validation';
@@ -57,11 +57,11 @@ export default function CreateCapsulePage() {
     textContent: '',
     deliveryDate: '',
     recipients: [''],
-    phoneRecipients: [''],
+    // phoneRecipients: [''], // SMS functionality commented out
     isPublic: false,
     isPaid: true,
     userEmail: '',
-    userPhone: '',
+    // userPhone: '', // SMS functionality commented out
   });
   
   // UI state
@@ -80,18 +80,25 @@ export default function CreateCapsulePage() {
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Calculate minimum date (1 month from now)
-  const minDate = new Date();
-  minDate.setMonth(minDate.getMonth() + 1);
-  const minDateString = minDate.toISOString().split('T')[0];
+  // Calculate minimum date (1 month from now) - memoized for performance
+  const minDateString = useMemo(() => {
+    const minDate = new Date();
+    minDate.setMonth(minDate.getMonth() + 1);
+    return minDate.toISOString().split('T')[0];
+  }, []);
   
-  // Calculate maximum date (20 years from now)
-  const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() + 20);
-  const maxDateString = maxDate.toISOString().split('T')[0];
+  // Calculate maximum date (20 years from now) - memoized for performance
+  const maxDateString = useMemo(() => {
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 20);
+    return maxDate.toISOString().split('T')[0];
+  }, []);
   
-  // Word count for text content
-  const wordCount = formData.textContent ? countWords(formData.textContent) : 0;
+  // Word count for text content - memoized for performance
+  const wordCount = useMemo(() => 
+    formData.textContent ? countWords(formData.textContent) : 0, 
+    [formData.textContent]
+  );
   
   /**
    * Handle form field changes
@@ -130,24 +137,7 @@ export default function CreateCapsulePage() {
     }
   };
 
-  /**
-   * Handle recipient phone changes
-   */
-  const handlePhoneRecipientChange = (index: number, value: string) => {
-    const newPhoneRecipients = [...(formData.phoneRecipients || [''])];
-    newPhoneRecipients[index] = value;
-    setFormData(prev => ({
-      ...prev,
-      phoneRecipients: newPhoneRecipients
-    }));
-    
-    if (errors.phoneRecipients) {
-      setErrors(prev => ({
-        ...prev,
-        phoneRecipients: undefined
-      }));
-    }
-  };
+  // SMS functionality removed - handlePhoneRecipientChange function
   
   /**
    * Add new recipient email field
@@ -174,30 +164,7 @@ export default function CreateCapsulePage() {
     }
   };
 
-  /**
-   * Add new recipient phone field
-   */
-  const addPhoneRecipient = () => {
-    if ((formData.phoneRecipients?.length || 0) < 3) {
-      setFormData(prev => ({
-        ...prev,
-        phoneRecipients: [...(prev.phoneRecipients || []), '']
-      }));
-    }
-  };
-  
-  /**
-   * Remove recipient phone field
-   */
-  const removePhoneRecipient = (index: number) => {
-    if ((formData.phoneRecipients?.length || 0) > 1) {
-      const newPhoneRecipients = (formData.phoneRecipients || []).filter((_, i) => i !== index);
-      setFormData(prev => ({
-        ...prev,
-        phoneRecipients: newPhoneRecipients
-      }));
-    }
-  };
+  // SMS functionality removed - addPhoneRecipient and removePhoneRecipient functions
   
   /**
    * Handle file upload
@@ -271,7 +238,7 @@ export default function CreateCapsulePage() {
       submitData.append('contentType', formData.contentType);
       submitData.append('deliveryDate', formData.deliveryDate);
       submitData.append('recipients', formData.recipients.filter(email => email.trim()).join(','));
-      submitData.append('phoneRecipients', (formData.phoneRecipients || []).filter(phone => phone.trim()).join(','));
+      // submitData.append('phoneRecipients', (formData.phoneRecipients || []).filter(phone => phone.trim()).join(',')); // SMS functionality commented out
       submitData.append('isPublic', formData.isPublic.toString());
       submitData.append('isPaid', 'false');
       
@@ -291,11 +258,14 @@ export default function CreateCapsulePage() {
         submitData.append('userEmail', formData.userEmail);
       }
       
+      // SMS functionality commented out
+      /*
       if (formData.userPhone) {
         submitData.append('userPhone', formData.userPhone);
       }
+      */
       
-      const response = await fetch('/api/capsules', {
+      const response = await fetch('/api/capsules-custom', {
         method: 'POST',
         body: submitData,
       });
@@ -330,7 +300,7 @@ export default function CreateCapsulePage() {
       submitData.append('contentType', formData.contentType);
       submitData.append('deliveryDate', formData.deliveryDate);
       submitData.append('recipients', formData.recipients.filter(email => email.trim()).join(','));
-      submitData.append('phoneRecipients', (formData.phoneRecipients || []).filter(phone => phone.trim()).join(','));
+      // submitData.append('phoneRecipients', (formData.phoneRecipients || []).filter(phone => phone.trim()).join(',')); // SMS functionality commented out
       submitData.append('isPublic', formData.isPublic.toString());
       submitData.append('isPaid', 'true');
       
@@ -350,9 +320,12 @@ export default function CreateCapsulePage() {
         submitData.append('userEmail', formData.userEmail);
       }
       
+      // SMS functionality commented out
+      /*
       if (formData.userPhone) {
         submitData.append('userPhone', formData.userPhone);
       }
+      */
       
       const response = await fetch('/api/stripe', {
         method: 'POST',
@@ -405,11 +378,11 @@ export default function CreateCapsulePage() {
       textContent: '',
       deliveryDate: '',
       recipients: [''],
-      phoneRecipients: [''],
+      // phoneRecipients: [''], // SMS functionality commented out
       isPublic: false,
       isPaid: true,
       userEmail: '',
-      userPhone: '',
+      // userPhone: '', // SMS functionality commented out
     });
     setErrors({});
     setIsSuccess(false);
@@ -1126,6 +1099,8 @@ export default function CreateCapsulePage() {
               </div>
 
               {/* Phone Recipients */}
+              {/* SMS functionality commented out */}
+              {/*
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-lg font-black text-black font-retro uppercase">
@@ -1185,6 +1160,7 @@ export default function CreateCapsulePage() {
                   </div>
                 )}
               </div>
+              */}
               
               <div className="border-t-3 border-black my-8"></div>
               
@@ -1217,6 +1193,8 @@ export default function CreateCapsulePage() {
               </div>
 
               {/* User Phone */}
+              {/* SMS functionality commented out */}
+              {/*
               <div className="space-y-4">
                 <Label htmlFor="userPhone" className="text-lg font-black text-black font-retro uppercase">
                   <div className="flex items-center gap-2">
@@ -1245,6 +1223,7 @@ export default function CreateCapsulePage() {
                   </div>
                 )}
               </div>
+              */}
               
               <div className="border-t-3 border-black my-8"></div>
               
