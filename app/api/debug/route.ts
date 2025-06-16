@@ -14,8 +14,10 @@ export async function GET(_request: NextRequest) {
       hasDatabase: !!process.env.DATABASE_URI,
       hasSecret: !!process.env.PAYLOAD_SECRET,
       hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL,
+      hasVercelBlob: !!process.env.BLOB_READ_WRITE_TOKEN,
       appUrl: process.env.NEXT_PUBLIC_APP_URL,
       databaseUrlPrefix: process.env.DATABASE_URI?.substring(0, 20) + '...',
+      blobTokenPrefix: process.env.BLOB_READ_WRITE_TOKEN?.substring(0, 20) + '...',
     }
 
     console.log('📋 Environment check:', envCheck)
@@ -66,6 +68,18 @@ export async function GET(_request: NextRequest) {
       fileSystemCheck = `error: ${fsError instanceof Error ? fsError.message : 'unknown'}`
     }
 
+    // Check Vercel Blob
+    let blobCheck = 'disabled'
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const { vercelBlobAdapter } = await import('@/lib/storage/vercel-blob-adapter')
+        // Simple test - just check if adapter initializes
+        blobCheck = vercelBlobAdapter ? 'configured' : 'error'
+      } catch (blobError) {
+        blobCheck = `error: ${blobError instanceof Error ? blobError.message : 'unknown'}`
+      }
+    }
+
     const debugInfo = {
       timestamp: new Date().toISOString(),
       environment: envCheck,
@@ -75,6 +89,7 @@ export async function GET(_request: NextRequest) {
         dbConnection,
       },
       fileSystem: fileSystemCheck,
+      vercelBlob: blobCheck,
       routes: {
         admin: '/admin',
         api: '/api',

@@ -27,7 +27,8 @@ const optionalVars = [
   'STRIPE_SECRET_KEY',
   'RESEND_API_KEY',
   'FROM_EMAIL',
-  'MEDIA_DIR'
+  'MEDIA_DIR',
+  'BLOB_READ_WRITE_TOKEN'
 ];
 
 console.log('🔐 Environment Variables Check:');

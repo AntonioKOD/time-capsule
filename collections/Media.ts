@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck
 import { CollectionConfig } from 'payload'
+import { vercelBlobAdapter } from '../lib/storage/vercel-blob-adapter'
 
 /**
  * Media Collection
@@ -12,10 +13,16 @@ export const Media: CollectionConfig = {
   
   // File upload configuration
   upload: {
-    // Local storage configuration (for development)
-    // In production, configure for AWS S3 or similar cloud storage
-    staticDir: process.env.MEDIA_DIR || './media',
-    staticURL: '/media',
+    // Use Vercel Blob in production, local storage in development
+    ...(process.env.NODE_ENV === 'production' && process.env.BLOB_READ_WRITE_TOKEN ? {
+      // Vercel Blob configuration (production)
+      disableLocalStorage: true,
+      staticURL: '/api/media',
+    } : {
+      // Local storage configuration (development)
+      staticDir: process.env.MEDIA_DIR || './media',
+      staticURL: '/media',
+    }),
     
     // Image resizing and optimization
     imageSizes: [
@@ -192,17 +199,72 @@ export const Media: CollectionConfig = {
     
     afterCreate: [
       async ({ doc, req }) => {
-        // Log successful upload
-        console.log(`✅ Media uploaded successfully: ${doc.filename} (${doc.filesize} bytes)`)
-        
-        // Mark as processed (in a real app, you might trigger background processing here)
-        await req.payload.update({
-          collection: 'media',
-          id: doc.id,
-          data: {
-            isProcessed: true,
-          },
-        })
+        // Handle Vercel Blob upload in production
+        if (process.env.NODE_ENV === 'production' && process.env.BLOB_READ_WRITE_TOKEN && req.file) {
+          try {
+            console.log(`📤 Processing file for Vercel Blob: ${req.file.name}`)
+            
+            const uploadResult = await vercelBlobAdapter.uploadFile({
+              buffer: req.file.data,
+              mimetype: req.file.mimetype,
+              name: req.file.name,
+              size: req.file.size,
+            }, 'media')
+
+            // Update document with Vercel Blob URL and metadata
+            await req.payload.update({
+              collection: 'media',
+              id: doc.id,
+              data: {
+                url: uploadResult.url,
+                filename: uploadResult.filename,
+                filesize: uploadResult.filesize,
+                width: uploadResult.width,
+                height: uploadResult.height,
+                mimeType: uploadResult.mimeType,
+                isProcessed: true,
+              },
+            })
+
+            console.log(`✅ Vercel Blob upload successful: ${uploadResult.url}`)
+          } catch (error) {
+            console.error('❌ Vercel Blob upload failed:', error)
+            // Mark as processed anyway to prevent infinite loops
+            await req.payload.update({
+              collection: 'media',
+              id: doc.id,
+              data: {
+                isProcessed: true,
+              },
+            })
+          }
+        } else {
+          // Local storage - just mark as processed
+          console.log(`✅ Media uploaded successfully: ${doc.filename} (${doc.filesize} bytes)`)
+          
+          await req.payload.update({
+            collection: 'media',
+            id: doc.id,
+            data: {
+              isProcessed: true,
+            },
+          })
+        }
+      },
+    ],
+    
+    afterDelete: [
+      async ({ doc }) => {
+        // Delete from Vercel Blob in production
+        if (process.env.NODE_ENV === 'production' && process.env.BLOB_READ_WRITE_TOKEN && doc.url) {
+          try {
+            console.log(`🗑️ Deleting from Vercel Blob: ${doc.url}`)
+            await vercelBlobAdapter.deleteFile(doc.url)
+            console.log(`✅ Vercel Blob deletion successful`)
+          } catch (error) {
+            console.error('❌ Vercel Blob deletion failed:', error)
+          }
+        }
       },
     ],
   },
