@@ -72,9 +72,10 @@ export async function GET(_request: NextRequest) {
     let blobCheck = 'disabled'
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       try {
-        const { vercelBlobAdapter } = await import('@/lib/storage/vercel-blob-adapter')
-        // Simple test - just check if adapter initializes
-        blobCheck = vercelBlobAdapter ? 'configured' : 'error'
+        const { createVercelBlobHandler } = await import('@/lib/storage/vercel-blob-payload-adapter')
+        // Simple test - just check if handler can be created
+        const handler = await createVercelBlobHandler('test')
+        blobCheck = handler ? 'configured' : 'error'
       } catch (blobError) {
         blobCheck = `error: ${blobError instanceof Error ? blobError.message : 'unknown'}`
       }
