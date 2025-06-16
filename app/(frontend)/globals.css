@@ -1,0 +1,843 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+/* Neobrutalist/Retro theme tokens - Minimal Bittersweet Palette */
+@theme inline {
+  /* Minimal Bittersweet Colors */
+  --color-blue: #1E90FF; /* Electric Blue - Joy/Energy */
+  --color-black: #000000; /* Pure Black - Melancholy/Depth */
+  --color-white: #ffffff; /* Pure White - Hope/Clarity */
+  --color-gray: #666666; /* Mid Gray - Neutral/Balance */
+  --color-light-gray: #f5f5f5; /* Light Gray - Subtle Background */
+  
+  /* Base colors - Minimal Theme */
+  --color-primary: #1E90FF; /* Electric Blue - Primary */
+  --color-secondary: #000000; /* Black - Secondary */
+  --color-accent: #1E90FF; /* Electric Blue - Accent */
+  --color-background: #ffffff; /* White - Background */
+  --color-foreground: #000000; /* Black - Foreground */
+
+  /* Text Colors */
+  --color-text: #000000; /* Black - Text Base */
+  --color-text-muted: #666666; /* Gray - Muted Text */
+
+  /* UI Colors */
+  --color-cta: #1E90FF; /* Electric Blue - Call-to-Action */
+  --color-card: #ffffff; /* White - Card BG */
+  --color-card-alt: #f5f5f5; /* Light Gray - Alt Card BG */
+  --color-border: #000000; /* Black - Borders */
+
+  /* State Colors */
+  --color-success: #1E90FF; /* Electric Blue - Success */
+  --color-warning: #1E90FF; /* Electric Blue - Warnings */
+  --color-info: #000000; /* Black - Info */
+  --color-error: #000000; /* Black - Error */
+
+  /* Tailwind HSL variables - Minimal */
+  --background: 0 0% 100%; /* White */
+  --foreground: 0 0% 0%; /* Black */
+  --primary: 210 100% 56%; /* Electric Blue */
+  --secondary: 0 0% 0%; /* Black */
+  --accent: 210 100% 56%; /* Electric Blue */
+  --muted: 0 0% 96%; /* Light Gray */
+  --muted-foreground: 0 0% 40%; /* Gray */
+  --card: 0 0% 100%; /* White */
+  --card-foreground: 0 0% 0%; /* Black */
+  --popover: 0 0% 100%; /* White */
+  --popover-foreground: 0 0% 0%; /* Black */
+  --border: 0 0% 0%; /* Black */
+  --input: 0 0% 100%; /* White */
+  --ring: 210 100% 56%; /* Electric Blue */
+  --radius: 0rem; /* No border radius for brutalist style */
+
+  /* Other required variables */
+  --primary-foreground: 0 0% 100%; /* White on Primary */
+  --secondary-foreground: 0 0% 100%; /* White on Secondary */
+  --destructive: 0 0% 0%; /* Black */
+  --destructive-foreground: 0 0% 100%; /* White on Destructive */
+
+  /* Brutalist Font settings */
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-retro: "Space Grotesk", sans-serif;
+  --font-handwritten: "Space Grotesk", sans-serif;
+}
+
+/* Base styles - Neobrutalist */
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  
+  html {
+    scroll-behavior: smooth;
+    height: 100%;
+  }
+  
+  body {
+    background: #ffffff;
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Enhanced mobile viewport handling */
+  @supports (-webkit-touch-callout: none) {
+    html {
+      height: -webkit-fill-available;
+    }
+  }
+
+  /* Brutalist Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-retro);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: hsl(var(--foreground));
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 8vw, 6rem);
+    margin-bottom: 1.5rem;
+    font-weight: 900;
+  }
+
+  h2 {
+    font-size: clamp(2rem, 6vw, 4rem);
+    margin-bottom: 1.25rem;
+    font-weight: 800;
+  }
+
+  h3 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  p {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    color: #000000;
+    font-family: var(--font-sans);
+    font-weight: 600;
+  }
+
+  /* Brutalist Focus Styles */
+  *:focus-visible {
+    outline: 3px solid #000000;
+    outline-offset: 2px;
+  }
+
+  /* Brutalist Selection Styles */
+  ::selection {
+    background-color: #1E90FF;
+    color: #ffffff;
+  }
+  
+  /* Font utility classes */
+  .font-retro {
+    font-family: var(--font-retro);
+  }
+  
+  .font-handwritten {
+    font-family: var(--font-retro);
+  }
+}
+
+/* Brutalist Button Styles */
+.brutalist-button {
+  background: #1E90FF;
+  border: 4px solid #000000;
+  color: #ffffff !important;
+  font-family: var(--font-retro);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 16px 32px;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: 8px 8px 0 #000000;
+  cursor: pointer;
+  transform: translate(-4px, -4px);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.brutalist-button:hover {
+  background: #000000;
+  color: #ffffff !important;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 #000000;
+}
+
+.brutalist-button:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 #000000;
+}
+
+.brutalist-button-primary {
+  background: #1E90FF;
+  color: #ffffff !important;
+  border: 4px solid #000000;
+}
+
+.brutalist-button-primary:hover {
+  background: #000000;
+  color: #ffffff !important;
+  border: 4px solid #000000;
+}
+
+.brutalist-button-secondary {
+  background: #ffffff;
+  color: #000000 !important;
+  border: 4px solid #000000;
+}
+
+.brutalist-button-secondary:hover {
+  background: #1E90FF;
+  color: #ffffff !important;
+  border: 4px solid #000000;
+}
+
+.brutalist-button-black {
+  background: #000000;
+  color: #ffffff !important;
+  border: 4px solid #000000;
+}
+
+.brutalist-button-black:hover {
+  background: #1E90FF;
+  color: #ffffff !important;
+  border: 4px solid #000000;
+}
+
+.brutalist-button-white {
+  background: #ffffff;
+  color: #000000 !important;
+  border: 4px solid #000000;
+}
+
+.brutalist-button-white:hover {
+  background: #000000;
+  color: #ffffff !important;
+  border: 4px solid #000000;
+}
+
+/* Small button variant */
+.brutalist-button-sm {
+  padding: 12px 24px;
+  font-size: 14px;
+  min-height: 44px;
+  box-shadow: 6px 6px 0 #000000;
+  transform: translate(-3px, -3px);
+}
+
+.brutalist-button-sm:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 3px 3px 0 #000000;
+}
+
+.brutalist-button-sm:active {
+  transform: translate(0, 0);
+  box-shadow: 1px 1px 0 #000000;
+}
+
+/* Large button variant */
+.brutalist-button-lg {
+  padding: 20px 40px;
+  font-size: 18px;
+  min-height: 64px;
+  box-shadow: 10px 10px 0 #000000;
+  transform: translate(-5px, -5px);
+}
+
+.brutalist-button-lg:hover {
+  transform: translate(-2.5px, -2.5px);
+  box-shadow: 5px 5px 0 #000000;
+}
+
+.brutalist-button-lg:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 #000000;
+}
+
+/* Disabled state */
+.brutalist-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 #000000;
+}
+
+.brutalist-button:disabled:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 #000000;
+}
+
+/* Full width variant */
+.brutalist-button-full {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Icon spacing in buttons */
+.brutalist-button svg {
+  flex-shrink: 0;
+}
+
+.brutalist-button .button-icon-left {
+  margin-right: 8px;
+}
+
+.brutalist-button .button-icon-right {
+  margin-left: 8px;
+}
+
+/* Ensure text visibility in all button states */
+.brutalist-button,
+.brutalist-button:hover,
+.brutalist-button:active,
+.brutalist-button:focus,
+.brutalist-button:visited {
+  text-decoration: none !important;
+}
+
+.brutalist-button * {
+  color: inherit !important;
+}
+
+/* Link buttons specific styling */
+a.brutalist-button {
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+a.brutalist-button:hover {
+  text-decoration: none !important;
+}
+
+/* Button focus states for accessibility */
+.brutalist-button:focus-visible {
+  outline: 3px solid #1E90FF;
+  outline-offset: 2px;
+}
+
+/* Button loading state */
+.brutalist-button .loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Button group spacing */
+.button-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-group .brutalist-button {
+  flex: 1;
+  min-width: 140px;
+}
+
+@media (max-width: 640px) {
+  .button-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .button-group .brutalist-button {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+/* Enhanced checkbox styling for public sharing */
+.public-sharing-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #000000;
+  background: #ffffff;
+}
+
+.public-sharing-checkbox:checked {
+  background: #1E90FF;
+  border-color: #000000;
+}
+
+/* Better form section spacing */
+.form-section {
+  padding: 24px 0;
+  border-bottom: 3px solid #000000;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+/* Enhanced brutalist dividers */
+.brutalist-divider {
+  height: 4px;
+  background: #000000;
+  margin: 32px 0;
+  border: none;
+}
+
+/* Brutalist Card Styles */
+.brutalist-card {
+  background: #ffffff;
+  border: 3px solid #000000;
+  box-shadow: 12px 12px 0 #000000;
+  position: relative;
+  transition: all 0.3s ease;
+  transform: translate(-6px, -6px);
+}
+
+.brutalist-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 #000000;
+}
+
+.brutalist-card-blue {
+  background: #1E90FF;
+  color: #ffffff !important;
+}
+
+.brutalist-card-blue * {
+  color: #ffffff !important;
+}
+
+.brutalist-card-black {
+  background: #000000;
+  color: #ffffff !important;
+}
+
+.brutalist-card-black * {
+  color: #ffffff !important;
+}
+
+.brutalist-card-white {
+  background: #ffffff;
+  color: #000000 !important;
+}
+
+.brutalist-card-white * {
+  color: #000000 !important;
+}
+
+.brutalist-card-gray {
+  background: #f5f5f5;
+  color: #000000 !important;
+}
+
+.brutalist-card-gray * {
+  color: #000000 !important;
+}
+
+.brutalist-card-orange {
+  background: #1E90FF;
+  color: #ffffff !important;
+}
+
+.brutalist-card-orange * {
+  color: #ffffff !important;
+}
+
+/* Brutalist Window Style */
+.brutalist-window {
+  background: #1E90FF;
+  border: 3px solid #000000;
+  box-shadow: 12px 12px 0 #000000;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  transform: translate(-6px, -6px);
+}
+
+.brutalist-window:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 #000000;
+}
+
+.brutalist-window-header {
+  background: #ffffff;
+  border-bottom: 3px solid #000000;
+  padding: 8px 16px;
+  font-weight: 900;
+  font-size: 14px;
+  color: #000000;
+  text-transform: uppercase;
+}
+
+.brutalist-window-content {
+  padding: 16px;
+  font-weight: 600;
+}
+
+/* Input Styles */
+.brutalist-input {
+  background: #ffffff;
+  border: 3px solid #000000;
+  padding: 12px 16px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 16px;
+  color: #000000;
+  transition: all 0.3s ease;
+  box-shadow: 3px 3px 0 #000000;
+}
+
+.brutalist-input:focus {
+  outline: none;
+  box-shadow: 6px 6px 0 #000000;
+  transform: translate(-1.5px, -1.5px);
+  border-color: #1E90FF;
+}
+
+.brutalist-input::placeholder {
+  color: #666666;
+  font-weight: 500;
+}
+
+/* Badge Styles */
+.brutalist-badge {
+  background: #1E90FF;
+  border: 2px solid #000000;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 2px 2px 0 #000000;
+}
+
+.brutalist-badge-black {
+  background: #000000;
+  color: #ffffff;
+}
+
+.brutalist-badge-white {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* Mobile-first responsive container */
+@media (min-width: 768px) {
+  .container {
+    max-width: 1200px;
+  }
+}
+
+/* Enhanced mobile styles */
+@media (max-width: 767px) {
+  /* Prevent zoom on form inputs */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Better touch targets */
+  button, .button, a[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+  }
+
+  /* Ensure content doesn't get hidden behind floating elements */
+  .mobile-content {
+    padding-bottom: 90px;
+  }
+
+  /* Specific padding for pages with bottom content */
+  .mobile-feed-container {
+    padding-bottom: 70px;
+  }
+
+  /* Container padding for all pages */
+  main, .main-content {
+    padding-bottom: 70px;
+  }
+
+  /* Special handling for fullscreen content like feeds */
+  .fullscreen-content {
+    padding-bottom: 70px;
+  }
+  
+  /* Improved tap highlighting */
+  button, .button, a {
+    -webkit-tap-highlight-color: rgba(30, 144, 255, 0.3);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Better scrolling on mobile */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Fix for mobile keyboard pushing content */
+  .mobile-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Reduce shadows on mobile for performance */
+  .brutalist-card {
+    box-shadow: 6px 6px 0 #000000;
+    transform: translate(-3px, -3px);
+  }
+
+  .brutalist-card:hover {
+    transform: translate(-1.5px, -1.5px);
+    box-shadow: 3px 3px 0 #000000;
+  }
+
+  .brutalist-button {
+    box-shadow: 3px 3px 0 #000000;
+    transform: translate(-1.5px, -1.5px);
+  }
+}
+
+/* Tablet specific styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .container {
+    max-width: 768px;
+  }
+  
+  button, .button {
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  main, .main-content {
+    padding-bottom: 40px;
+  }
+  
+  .fullscreen-content {
+    padding-bottom: 40px;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Desktop hover effects */
+  .hover-only:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+/* Safe area handling for modern devices */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .button, button {
+    border-width: 4px;
+    border-color: currentColor;
+  }
+}
+
+/* Custom scrollbar - Brutalist */
+::-webkit-scrollbar {
+  width: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ffffff;
+  border: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E90FF;
+  border: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #000000;
+}
+
+/* Brutalist Animations */
+@keyframes brutalistBounce {
+  0%, 100% {
+    transform: translate(-6px, -6px);
+  }
+  50% {
+    transform: translate(-3px, -3px);
+  }
+}
+
+@keyframes brutalistShake {
+  0%, 100% {
+    transform: translate(-6px, -6px);
+  }
+  25% {
+    transform: translate(-4px, -8px);
+  }
+  75% {
+    transform: translate(-8px, -4px);
+  }
+}
+
+@keyframes brutalistPop {
+  0% {
+    transform: translate(-6px, -6px) scale(1);
+  }
+  50% {
+    transform: translate(-3px, -3px) scale(1.05);
+  }
+  100% {
+    transform: translate(-6px, -6px) scale(1);
+  }
+}
+
+@keyframes brutalistFloat {
+  0%, 100% {
+    transform: translate(-6px, -6px) rotate(0deg);
+  }
+  50% {
+    transform: translate(-3px, -3px) rotate(2deg);
+  }
+}
+
+/* Utility Classes */
+.animate-brutalist-bounce {
+  animation: brutalistBounce 2s ease-in-out infinite;
+}
+
+.animate-brutalist-shake {
+  animation: brutalistShake 0.5s ease-in-out infinite;
+}
+
+.animate-brutalist-pop {
+  animation: brutalistPop 0.6s ease-in-out;
+}
+
+.animate-brutalist-float {
+  animation: brutalistFloat 3s ease-in-out infinite;
+}
+
+.text-blue {
+  color: #1E90FF;
+}
+
+.text-black {
+  color: #000000;
+}
+
+.text-white {
+  color: #ffffff;
+}
+
+.text-gray {
+  color: #666666;
+}
+
+.bg-blue {
+  background-color: #1E90FF;
+}
+
+.bg-black {
+  background-color: #000000;
+}
+
+.bg-white {
+  background-color: #ffffff;
+}
+
+.bg-gray {
+  background-color: #f5f5f5;
+}
+
+.border-brutalist {
+  border: 3px solid #000000;
+}
+
+.shadow-brutalist {
+  box-shadow: 6px 6px 0 #000000;
+}
+
+.shadow-brutalist-lg {
+  box-shadow: 12px 12px 0 #000000;
+}
+
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+.hardware-accelerated {
+  transform: translateZ(0);
+}
+
+/* Line clamp utility for text truncation */
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+} 

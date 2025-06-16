@@ -1,0 +1,112 @@
+/* Memory Capsule Creator - Payload Admin Panel Styles */
+
+/* Custom branding for the admin panel */
+:root {
+  --theme-bg: #f8fafc;
+  --theme-text: #1e293b;
+  --theme-primary: #7c3aed;
+  --theme-secondary: #3b82f6;
+  --theme-success: #10b981;
+  --theme-warning: #f59e0b;
+  --theme-error: #ef4444;
+}
+
+/* Admin panel header customization */
+.payload-admin-bar {
+  background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+}
+
+/* Custom logo area */
+.nav__brand {
+  color: white !important;
+  font-weight: 700;
+}
+
+/* Form styling improvements */
+.field-type--text input,
+.field-type--textarea textarea,
+.field-type--email input,
+.field-type--number input {
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  transition: border-color 0.2s ease;
+}
+
+.field-type--text input:focus,
+.field-type--textarea textarea:focus,
+.field-type--email input:focus,
+.field-type--number input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Button styling */
+.btn--style-primary {
+  background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.btn--style-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+/* Collection list styling */
+.collection-list__item {
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.collection-list__item:hover {
+  border-color: #7c3aed;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.1);
+}
+
+/* Status indicators */
+.pill--style-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.pill--style-warning {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.pill--style-error {
+  background-color: #ef4444;
+  color: white;
+}
+
+/* Custom styling for capsule content type indicators */
+.content-type-text {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.content-type-photo {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.content-type-voice {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+} 
