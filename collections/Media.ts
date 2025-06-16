@@ -14,7 +14,7 @@ export const Media: CollectionConfig = {
   upload: {
     // Local storage configuration (for development)
     // In production, configure for AWS S3 or similar cloud storage
-    staticDir: './media',
+    staticDir: process.env.MEDIA_DIR || './media',
     staticURL: '/media',
     
     // Image resizing and optimization

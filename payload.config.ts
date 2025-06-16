@@ -85,6 +85,11 @@ export default buildConfig({
     url: process.env.DATABASE_URI || 'mongodb://localhost:27017/memory-capsule',
     connectOptions: {
       dbName: 'memory-capsule',
+      ...(process.env.NODE_ENV === 'production' && {
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+      }),
     },
   }),
 
@@ -119,9 +124,14 @@ export default buildConfig({
     },
   },
 
-  // Sharp for image processing
-  sharp,
+  // Sharp for image processing - conditional for production
+  ...(process.env.NODE_ENV === 'production' ? {} : { sharp }),
 
   // Environment-specific configuration
-  secret: process.env.PAYLOAD_SECRET || 'jkhdas0919391iosjkdasi00u30akjd',
+  secret: process.env.PAYLOAD_SECRET || (() => {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('PAYLOAD_SECRET environment variable is required in production');
+    }
+    return 'jkhdas0919391iosjkdasi00u30akjd';
+  })(),
 })
